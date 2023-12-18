@@ -1,0 +1,1 @@
+export const FOLDER_VEHICULOS_VTV = process.env.FOLDER_VEHICULOS_VTV;
