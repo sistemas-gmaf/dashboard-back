@@ -17,7 +17,7 @@ export const create = async ({ url, archivoTipo, tipo, poseedor, poseedorId, fil
     ) VALUES (
       $1,$2,$3,$4,$5,$6,$7,true
     ) RETURNING id`;
-    const resultInsertDocumentacion = await client.query(queryInsertDocumentacion, [
+    const resultInsertDocumentacion = await connection.queryWithParameters(queryInsertDocumentacion, [
       poseedor, poseedorId, tipo, url, archivoTipo, fileId, timestamp
     ]);
     const documentacionId = resultInsertDocumentacion.rows[0].id;

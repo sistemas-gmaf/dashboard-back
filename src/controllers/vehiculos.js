@@ -46,35 +46,37 @@ export const create = async (req, res) => {
     vehiculoId = await vehiculosService.create({ 
       chofer, patente, transporte, vehiculo_tipo, connection
     });
-
-    const { value: foldersSharedWithMe } = await msGraphService.getFoldersSharedWithMe({ accessToken });
-    const vtvFolder = foldersSharedWithMe.find(fldr => fldr.name === FOLDER_VEHICULOS_VTV);
-
-    const fileContent = req.file.buffer;
-    const fileType = req.file.mimetype;
-    const fileExtension = req.file.originalname.split('.')[1];
-    const fileName = `${vehiculoId}.${fileExtension}`;
-    const folderName = FOLDER_VEHICULOS_VTV;
-    const parentId = vtvFolder.remoteItem.id;
     
-    driveId = vtvFolder.remoteItem.parentReference.driveId;
+    if (Boolean(req.file)) {
+      const fileContent = req.file.buffer;
+      const fileType = req.file.mimetype;
+      const fileExtension = req.file.originalname.split('.')[1];
+      const fileName = `${vehiculoId}.${fileExtension}`;
+      const folderName = FOLDER_VEHICULOS_VTV;
+      const parentId = vtvFolder.remoteItem.id;
 
-    responseSaveFile = await msGraphService.createFileInFolder({ 
-      accessToken, fileName, fileType, folderName, fileContent, driveId, parentId
-    });
-
-    documentacionId = await documentacionService.create({
-      url: responseSaveFile.publicUrl,
-      archivoTipo: fileType,
-      tipo: 'vtv',
-      poseedor: 'vehiculo',
-      poseedorId: vehiculoId,
-      fileId: responseSaveFile.id,
-      connection
-    });
+      const { value: foldersSharedWithMe } = await msGraphService.getFoldersSharedWithMe({ accessToken });
+      const vtvFolder = foldersSharedWithMe.find(fldr => fldr.name === FOLDER_VEHICULOS_VTV);
+      
+      driveId = vtvFolder.remoteItem.parentReference.driveId;
+  
+      responseSaveFile = await msGraphService.createFileInFolder({ 
+        accessToken, fileName, fileType, folderName, fileContent, driveId, parentId
+      });
+  
+      documentacionId = await documentacionService.create({
+        url: responseSaveFile.publicUrl,
+        archivoTipo: fileType,
+        tipo: 'vtv',
+        poseedor: 'vehiculo',
+        poseedorId: vehiculoId,
+        fileId: responseSaveFile.id,
+        connection
+      });
+    }
 
     await connection.commit();
-    res.status(201).json({ message: 'Vehículo creado exitosamente', vtvFolder, responseSaveFile, documentacionId });
+    res.status(201).json({ message: 'Vehículo creado exitosamente' });
   } catch (error) {
     if (Boolean(responseSaveFile)) {
       msGraphService.deleteFile({ accessToken, driveId, itemId: responseSaveFile.id });

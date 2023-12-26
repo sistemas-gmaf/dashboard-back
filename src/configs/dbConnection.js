@@ -29,11 +29,11 @@ export const createTransaction = async () => {
     await connection.release();
   };
   const rollback = async () => {
-    await connection.query('COMMIT');
+    await connection.query('ROLLBACK');
     await connection.release();
   };
   const queryWithParameters = async (query, params) => {
-    await connection.query(query, params);
+    return await connection.query(query, params);
   }
 
   return {

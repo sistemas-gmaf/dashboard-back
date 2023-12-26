@@ -99,7 +99,7 @@ export const create = async ({
     ) values (
       $1, $2, $3, true
     )`;
-    await connection.query(queryInsertTransporteVehiculo, [
+    await connection.queryWithParameters(queryInsertTransporteVehiculo, [
       transporte, 
       vehiculoId, 
       timestamp
