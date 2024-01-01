@@ -10,12 +10,27 @@ import { createTransaction } from "../configs/dbConnection.js";
  * @param {Response} res 
  */
 export const get = async (req, res) => {
+  const { accessToken } = req.user;
+  let vtv_url = null;
+
   try {
     const { id } = req.params;
 
     const result = await vehiculosService.get({ id });
 
-    res.json({ data: result });
+    if (id && result.item_id_onedrive && result.drive_id_onedrive) {
+      vtv_url = await msGraphService.getDownloadUrl({ 
+        accessToken, 
+        driveId: result.drive_id_onedrive,
+        itemId: result.item_id_onedrive
+      });
+    }
+
+    if (id) {
+      res.json({ data: { ...result, vtv_url } });
+    } else {
+      res.json({ data: result });
+    }
   } catch (error) {
     res.status(error?.statusCode || 500).json({ message: 'Error al obtener vehiculos', error });
   }
@@ -33,7 +48,6 @@ export const create = async (req, res) => {
   let vehiculoId;
   let driveId;
   let responseSaveFile;
-  let documentacionId;
   let connection;
 
   try {
@@ -53,23 +67,22 @@ export const create = async (req, res) => {
       const fileExtension = req.file.originalname.split('.')[1];
       const fileName = `${vehiculoId}.${fileExtension}`;
       const folderName = FOLDER_VEHICULOS_VTV;
-      const parentId = vtvFolder.remoteItem.id;
-
-      const { value: foldersSharedWithMe } = await msGraphService.getFoldersSharedWithMe({ accessToken });
-      const vtvFolder = foldersSharedWithMe.find(fldr => fldr.name === FOLDER_VEHICULOS_VTV);
       
-      driveId = vtvFolder.remoteItem.parentReference.driveId;
+      const folderResponse = await msGraphService.getFoldersSharedWithMe({ accessToken, folderName });
+
+      const parentId = folderResponse.parentId;
+      driveId = folderResponse.driveId;
   
       responseSaveFile = await msGraphService.createFileInFolder({ 
         accessToken, fileName, fileType, folderName, fileContent, driveId, parentId
       });
-  
-      documentacionId = await documentacionService.create({
-        url: responseSaveFile.publicUrl,
+
+      await documentacionService.create({
         archivoTipo: fileType,
         tipo: 'vtv',
         poseedor: 'vehiculo',
         poseedorId: vehiculoId,
+        driveId: responseSaveFile.parentReference.driveId,
         fileId: responseSaveFile.id,
         connection
       });
@@ -118,19 +131,17 @@ export const update = async (req, res) => {
     });
 
     if (Boolean(file)) {
-      const { value: foldersSharedWithMe } = await msGraphService.getFoldersSharedWithMe({ accessToken });
-      const vtvFolder = foldersSharedWithMe.find(fldr => fldr.name === FOLDER_VEHICULOS_VTV);
-
       const fileContent = file.buffer;
       const fileType = file.mimetype;
       const fileExtension = file.originalname.split('.')[1];
       const fileName = `${id}.${fileExtension}`;
       const folderName = FOLDER_VEHICULOS_VTV;
-      const parentId = vtvFolder.remoteItem.id;
       
-      driveId = vtvFolder.remoteItem.parentReference.driveId;
-
-      responseSaveFile = await msGraphService.createFileInFolder({ 
+      const folderResponse = await msGraphService.getFoldersSharedWithMe({ accessToken, folderName });
+      const parentId = folderResponse.parentId;
+      driveId = folderResponse.driveId;
+      
+      responseSaveFile = await msGraphService.updateFileInFolder({ 
         accessToken, 
         fileName,
         fileType,
@@ -141,7 +152,7 @@ export const update = async (req, res) => {
       });
 
       await documentacionService.update({
-        url: responseSaveFile.publicUrl,
+        driveId,
         archivoTipo: fileType,
         tipo: 'vtv',
         poseedor: 'vehiculo',
@@ -153,7 +164,7 @@ export const update = async (req, res) => {
     }
 
     await connection.commit();
-    res.status(204).json({ message: 'Vehiculo actualizado correctamente' });
+    res.status(200).json({ message: 'Vehiculo actualizado correctamente', responseSaveFile });
   } catch (error) {
     await connection?.rollback();
     res.status(error?.statusCode || 500).json({ message: 'Error al actualizar vehiculo', error });

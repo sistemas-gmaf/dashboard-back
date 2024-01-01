@@ -1,10 +1,9 @@
 import { Router } from "express";
-import multer from "multer";
+import * as multerMiddleware from '../middlewares/multer.js';
 import * as authMiddleware from '../middlewares/auth.js';
 import * as transportesController from '../controllers/transportes.js';
 
 const api = Router();
-const upload = multer();
 
 api.get('/transportes',
   authMiddleware.isAuthenticated,
@@ -18,12 +17,13 @@ api.get('/transportes/:id',
 
 api.post('/transportes',
   authMiddleware.isAuthenticated,
+  multerMiddleware.upload.single('constancia_afip'),
   transportesController.create
 );
 
 api.patch('/transportes/:id',
   authMiddleware.isAuthenticated,
-  upload.none(),
+  multerMiddleware.upload.single('constancia_afip'),
   transportesController.update
 );
 

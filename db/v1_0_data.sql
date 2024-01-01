@@ -1,7 +1,7 @@
 BEGIN;
 
 INSERT INTO usuario(correo, fecha_creacion)
-VALUES('sistemas@grupomaf.com', current_timestamp)
+VALUES('sistemas@grupomaf.com.ar', current_timestamp)
 
 INSERT INTO vehiculo_tipo (descripcion, fecha_creacion, activo)
 VALUES

@@ -1,6 +1,6 @@
 import { getTimestamp } from "../utils/time.js";
 
-export const create = async ({ url, archivoTipo, tipo, poseedor, poseedorId, fileId, connection }) => {
+export const create = async ({ archivoTipo, tipo, poseedor, poseedorId, driveId, fileId, connection }) => {
 
   try {
     const timestamp = getTimestamp();
@@ -9,7 +9,7 @@ export const create = async ({ url, archivoTipo, tipo, poseedor, poseedorId, fil
       tipo_poseedor, 
       id_poseedor, 
       tipo_documentacion,
-      url_archivo,
+      drive_id_onedrive,
       tipo_archivo,
       item_id_onedrive,
       fecha_creacion,
@@ -18,7 +18,7 @@ export const create = async ({ url, archivoTipo, tipo, poseedor, poseedorId, fil
       $1,$2,$3,$4,$5,$6,$7,true
     ) RETURNING id`;
     const resultInsertDocumentacion = await connection.queryWithParameters(queryInsertDocumentacion, [
-      poseedor, poseedorId, tipo, url, archivoTipo, fileId, timestamp
+      poseedor, poseedorId, tipo, driveId, archivoTipo, fileId, timestamp
     ]);
     const documentacionId = resultInsertDocumentacion.rows[0].id;
 
@@ -29,7 +29,7 @@ export const create = async ({ url, archivoTipo, tipo, poseedor, poseedorId, fil
 }
 
 export const update = async ({
-  url,
+  driveId,
   archivoTipo,
   tipo,
   poseedor,
@@ -45,7 +45,7 @@ export const update = async ({
       UPDATE
         documentacion
       SET
-        url_archivo=$1,
+        drive_id_onedrive=$1,
         tipo_archivo=$2,
         item_id_onedrive=$3,
         fecha_ultima_edicion=$4,
@@ -57,7 +57,7 @@ export const update = async ({
     `;
 
     await connection.queryWithParameters(query, [
-      url, 
+      driveId, 
       archivoTipo, 
       fileId, 
       timestamp, 

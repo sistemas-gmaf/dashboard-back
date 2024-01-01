@@ -18,7 +18,7 @@ export const getUserProfile = async ({ accessToken }) => {
   }
 }
 
-export const getFoldersSharedWithMe = async ({ accessToken }) => {
+export const getFoldersSharedWithMe = async ({ accessToken, folderName }) => {
   try {
     const client = graph.Client.init({
       authProvider: (done) => {
@@ -28,24 +28,34 @@ export const getFoldersSharedWithMe = async ({ accessToken }) => {
   
     // Puede usar el cliente de Microsoft Graph para hacer llamadas a la API de Microsoft Graph
     const response = await client.api('/me/drive/sharedWithMe').get();
+
+    // Obtener tus propias carpetas (sirve para el caso de login con la cuenta sistemas)
+    const myDriveResponse = await client.api('/me/drive/root/children').get();
+
+    const selectedFolder = [...response.value, ...myDriveResponse.value]
+      .find(fldr => fldr.name === folderName);
+    const parentId = selectedFolder?.remoteItem?.id || selectedFolder?.id;
+    const driveId = selectedFolder?.remoteItem?.parentReference?.driveId || selectedFolder?.parentReference?.driveId;
     
-    return response;
+    return {
+      parentId,
+      driveId
+    };
   } catch (error) {
     throw error;
   }
 }
 
+/**
+ * Por si se necesita modificar la funcion de actualizar o crear archivos se deja en funciones separadas
+ */
 export const createFileInFolder = async ({ 
   accessToken, 
-  fileName, 
-  fileType,
+  fileName,
   driveId, 
   fileContent, 
   parentId 
 }) => {
-  let fileId;
-  let shareResponse;
-
   const client = graph.Client.init({
     authProvider: (done) => {
       done(null, accessToken);
@@ -55,32 +65,32 @@ export const createFileInFolder = async ({
   try {
     const response = await client.api(`/drives/${driveId}/items/${parentId}:/${fileName}:/content`)
       .put(fileContent);
-    
-    // Obtener el ID del archivo recién creado
-    fileId = response.id;
 
-    //Si no es una imagen sera un embed
-    if (!fileType.includes('image')) {
-      // Compartir el archivo y obtener el enlace de uso compartido
-      shareResponse = await client.api(`/drives/${driveId}/items/${fileId}/createLink`)
-        .post({
-          type: 'embed', // Puedes cambiar a 'view' o a 'edit' si deseas permisos de edición
-        });
-    } else {
-      // Compartir el archivo y obtener el enlace de uso compartido
-      shareResponse = await client.api(`/drives/${driveId}/items/${fileId}/createLink`)
-        .post({
-          type: 'view', // Puedes cambiar a 'view' o a 'edit' si deseas permisos de edición
-        });
-    }
-
-    const publicUrl = shareResponse.link.webUrl;
-
-    return { ...response, publicUrl };
+    return response;
   } catch (error) {
-    await client.api(`/drives/${driveId}/items/${fileId}`)
-      .delete();
-      
+    throw error;
+  }
+}
+
+export const updateFileInFolder = async ({ 
+  accessToken, 
+  fileName,
+  driveId, 
+  fileContent, 
+  parentId 
+}) => {
+  const client = graph.Client.init({
+    authProvider: (done) => {
+      done(null, accessToken);
+    }
+  });
+
+  try {
+    const response = await client.api(`/drives/${driveId}/items/${parentId}:/${fileName}:/content`)
+      .put(fileContent);
+  
+    return response;
+  } catch (error) {
     throw error;
   }
 }
@@ -99,5 +109,22 @@ export const deleteFile = async ({ accessToken, driveId, itemId }) => {
     return response;
   } catch (error) {
     throw error;
+  }
+}
+
+export const getDownloadUrl = async ({ accessToken, driveId, itemId }) => {
+  try {
+    const client = graph.Client.init({
+      authProvider: (done) => {
+        done(null, accessToken);
+      }
+    });
+
+    const response = await client.api(`/drives/${driveId}/items/${itemId}`)
+      .get();
+
+    return response['@microsoft.graph.downloadUrl'];
+  } catch (error) {
+    return null;
   }
 }

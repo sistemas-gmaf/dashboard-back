@@ -16,7 +16,8 @@ export const get = async ({ id }) => {
         t.id as transporte_id,
         t.nombre as transporte_nombre,
         t.descripcion as transporte_descripcion,
-        doc_vtv.url_archivo as vtv_url,
+        doc_vtv.drive_id_onedrive,
+        doc_vtv.item_id_onedrive,
         doc_vtv.tipo_archivo as vtv_filetype
       FROM 
         vehiculo as v

@@ -41,9 +41,9 @@ export const create = async ({ nombre, descripcion, connection }) => {
       RETURNING id
     `;
 
-    const idTransporte = await connection.queryWithParameters(query, [nombre, descripcion, timestamp]);
+    const result = await connection.queryWithParameters(query, [nombre, descripcion, timestamp]);
 
-    return idTransporte;
+    return result.rows[0].id;
   } catch (error) {
     throw error;
   }
@@ -56,15 +56,25 @@ export const update = async ({ id, userEmail, nombre, descripcion, connection })
       UPDATE 
         transporte
       SET
-        nombre=$1, 
-        descripcion=$2, 
-        fecha_ultima_edicion=$3,
-        correo_ultima_edicion=$4
-      WHERE
-        id=$5
+        fecha_ultima_edicion=$1,
+        correo_ultima_edicion=$2
     `;
 
-    await connection.queryWithParameters(query, [nombre, descripcion, timestamp, userEmail, id]);
+    const queryParams = [timestamp, userEmail];
+
+    if (nombre !== undefined) {
+      query += ', nombre=$3';
+      queryParams.push(nombre);
+    }
+
+    if (descripcion !== undefined) {
+      query += ', descripcion=$' + (nombre !== undefined ? '4' : '3');
+      queryParams.push(descripcion);
+    }
+
+    query += ' WHERE id=$' + (queryParams.length + 1);
+
+    await connection.queryWithParameters(query, queryParams.concat(id));
 
     return true;
   } catch (error) {
