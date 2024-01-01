@@ -6,19 +6,24 @@ export const get = async ({ id }) => {
     let result;
     let query = `
       SELECT 
-        id, 
-        nombre, 
-        COALESCE(NULLIF(descripcion, ''), '-') as descripcion, 
-        fecha_creacion, 
-        fecha_ultima_edicion, 
-        correo_ultima_edicion
+        t.id, 
+        t.nombre, 
+        COALESCE(NULLIF(t.descripcion, ''), '-') as descripcion, 
+        t.fecha_creacion, 
+        t.fecha_ultima_edicion, 
+        t.correo_ultima_edicion,
+        doc_afip.drive_id_onedrive,
+        doc_afip.item_id_onedrive,
+        doc_afip.tipo_archivo as constancia_afip_filetype
       FROM 
-        transporte
+        transporte as t
+      LEFT JOIN (SELECT * from documentacion where tipo_documentacion='constancia_afip') as doc_afip
+        ON doc_afip.id_poseedor=t.id and doc_afip.tipo_poseedor='transporte'
       WHERE
-        activo=true`;
+        t.activo=true`;
   
     if (Boolean(id)) {
-      query += ` AND id=$1`;
+      query += ` AND t.id=$1`;
       result = await dbConnection.query(query, [id]);
       result = result.rows[0];
     } else {

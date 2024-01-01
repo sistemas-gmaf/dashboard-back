@@ -28,12 +28,12 @@ export const create = async ({ archivoTipo, tipo, poseedor, poseedorId, driveId,
   }
 }
 
-export const update = async ({
-  driveId,
+export const upsert = async ({
   archivoTipo,
   tipo,
   poseedor,
   poseedorId,
+  driveId,
   fileId,
   userEmail,
   connection
@@ -41,34 +41,38 @@ export const update = async ({
   try {
     const timestamp = getTimestamp();
 
-    const query = `
-      UPDATE
-        documentacion
-      SET
-        drive_id_onedrive=$1,
-        tipo_archivo=$2,
-        item_id_onedrive=$3,
-        fecha_ultima_edicion=$4,
-        correo_ultima_edicion=$5
-      WHERE
-        tipo_documentacion=$6
-        AND tipo_poseedor=$7
-        AND id_poseedor=$8
+    const queryUpsert = `
+      INSERT INTO documentacion (
+        tipo_poseedor, 
+        id_poseedor, 
+        tipo_documentacion,
+        drive_id_onedrive,
+        tipo_archivo,
+        item_id_onedrive,
+        fecha_creacion,
+        activo
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, true
+      )
+      ON CONFLICT (tipo_documentacion, tipo_poseedor, id_poseedor) 
+      DO UPDATE SET
+        drive_id_onedrive = $8,
+        tipo_archivo = $9,
+        item_id_onedrive = $10,
+        fecha_ultima_edicion = $11,
+        correo_ultima_edicion = $12
+      RETURNING id;
     `;
 
-    await connection.queryWithParameters(query, [
-      driveId, 
-      archivoTipo, 
-      fileId, 
-      timestamp, 
-      userEmail,
-      tipo,
-      poseedor,
-      poseedorId
+    const resultUpsert = await connection.queryWithParameters(queryUpsert, [
+      poseedor, poseedorId, tipo, driveId, archivoTipo, fileId, timestamp,
+      driveId, archivoTipo, fileId, timestamp, userEmail
     ]);
 
-    return true;
+    const documentacionId = resultUpsert.rows[0].id;
+
+    return documentacionId;
   } catch (error) {
     throw error;
   }
-}
+};

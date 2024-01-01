@@ -96,6 +96,9 @@ CREATE TABLE documentacion (
     activo BOOLEAN DEFAULT true NOT NULL
 );
 
+ALTER TABLE documentacion
+ADD CONSTRAINT unique_constraint_name UNIQUE (tipo_documentacion, tipo_poseedor, id_poseedor);
+
 -- Crear tabla estado_cheque
 CREATE TABLE estado_cheque (
     id SERIAL PRIMARY KEY,

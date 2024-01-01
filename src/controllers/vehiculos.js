@@ -151,7 +151,7 @@ export const update = async (req, res) => {
         parentId
       });
 
-      await documentacionService.update({
+      await documentacionService.upsert({
         driveId,
         archivoTipo: fileType,
         tipo: 'vtv',
