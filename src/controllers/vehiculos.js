@@ -92,7 +92,7 @@ export const create = async (req, res) => {
     res.status(201).json({ message: 'Vehículo creado exitosamente' });
   } catch (error) {
     if (Boolean(responseSaveFile)) {
-      msGraphService.deleteFile({ accessToken, driveId, itemId: responseSaveFile.id });
+      await msGraphService.deleteFile({ accessToken, driveId, itemId: responseSaveFile.id });
     }
     await connection?.rollback();
     res.status(error?.statusCode || 500).json({ message: 'Error al crear vehiculo', error });
