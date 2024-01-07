@@ -8,7 +8,7 @@ export const get = async ({ id }) => {
         c.id, c.categoria,
         c.razon_social, c.referencia,
         c.importe, c.fecha, TO_CHAR(TO_DATE(fecha, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_formateada,
-        c.estado, c.fecha_creacion
+        UPPER(c.estado) as estado, c.fecha_creacion
       FROM
         compromiso as c
       WHERE
@@ -37,7 +37,7 @@ export const create = async ({ categoria, razon_social, referencia, estado, fech
       INSERT INTO compromiso(
         categoria, razon_social, referencia, estado, fecha, importe, fecha_creacion, activo
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+      VALUES ($1, $2, $3, UPPER($4), $5, $6, $7, true)
       RETURNING id
     `;
 
