@@ -126,51 +126,19 @@ CREATE TABLE cheque (
     FOREIGN KEY (id_estado_cheque) REFERENCES estado_cheque (id)
 );
 
--- Crear tabla compromiso_categoria
-CREATE TABLE compromiso_categoria (
-    id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
-);
-
--- Crear tabla compromiso_razon_social
-CREATE TABLE compromiso_razon_social (
-    id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
-);
-
--- Crear tabla compromiso_estado
-CREATE TABLE compromiso_estado (
-    id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
-);
-
 -- Crear tabla compromiso
 CREATE TABLE compromiso (
     id SERIAL PRIMARY KEY,
-    id_compromiso_categoria INTEGER NOT NULL,
-    id_compromiso_razon_social INTEGER NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
+    razon_social VARCHAR(100) NOT NULL,
     referencia VARCHAR(100),
-    monto NUMERIC,
-    id_compromiso_estado INTEGER NOT NULL,
+    importe NUMERIC(12, 2),
+    fecha CHAR(8) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_compromiso_categoria) REFERENCES compromiso_categoria (id),
-    FOREIGN KEY (id_compromiso_razon_social) REFERENCES compromiso_razon_social (id),
-    FOREIGN KEY (id_compromiso_estado) REFERENCES compromiso_estado (id)
+    activo BOOLEAN DEFAULT true NOT NULL
 );
 
 -- Crear tabla transporte
