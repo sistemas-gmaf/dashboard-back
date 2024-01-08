@@ -114,16 +114,16 @@ CREATE TABLE cheque (
     id SERIAL PRIMARY KEY,
     fecha_emision CHAR(8),
     fecha_pago CHAR(8),
-    numero_cheque VARCHAR(50),
+    numero VARCHAR(50),
     banco VARCHAR(100),
-    valor NUMERIC,
+    importe NUMERIC(12, 2),
     referencia VARCHAR(100),
-    id_estado_cheque INTEGER NOT NULL,
+    proveedor VARCHAR(100),
+    estado VARCHAR(50) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_estado_cheque) REFERENCES estado_cheque (id)
+    activo BOOLEAN DEFAULT true NOT NULL
 );
 
 -- Crear tabla compromiso
