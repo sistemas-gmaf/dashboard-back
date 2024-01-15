@@ -4,15 +4,51 @@ import { getTimestamp } from "../utils/time.js";
 export const get = async ({ id }) => {
   try {
     let query = `
-      SELECT
-        id, fecha_emision, fecha_pago, 
-        TO_CHAR(TO_DATE(fecha_emision, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_emision_formateada,
-        TO_CHAR(TO_DATE(fecha_pago, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_pago_formateada,
-        numero, banco, importe,
-        TO_CHAR(importe, '$999,999,999.99') AS importe_formateado,
-        referencia, proveedor, UPPER(estado) as estado, fecha_creacion, 
-        fecha_ultima_edicion, correo_ultima_edicion
-      FROM cheque WHERE activo=TRUE`;
+      SELECT 
+        vj.id,
+        vj.fecha_salida,
+        TO_CHAR(TO_DATE(vj.fecha_salida, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_salida_formateada,
+        cl.id AS cliente_id,
+        cl.abreviacion_razon_social AS cliente,
+        ch.id AS chofer_id,
+        tr.id AS transporte_id,
+        tr.nombre AS transporte,
+        ch.nombre AS chofer,
+        vht.id AS vehiculo_tipo_id,
+        vht.descripcion AS vehiculo_tipo,     
+        vh.patente AS vehiculo_patente,   
+        z.descripcion AS zona,
+        vje.descripcion AS estado
+      FROM 
+        viaje vj
+      LEFT JOIN cliente cl
+        ON vj.id_cliente=cl.id
+      LEFT JOIN vehiculo vh
+        ON vh.id=vj.id_vehiculo
+      LEFT JOIN vehiculo_tipo vht
+        ON vht.id=vh.id_vehiculo_tipo
+      LEFT JOIN chofer_vehiculo chvh
+        ON chvh.id_vehiculo=vh.id
+      LEFT JOIN chofer ch
+        ON ch.id=chvh.id_chofer
+      LEFT JOIN zona z
+        ON z.id=vj.id_zona_destino
+      LEFT JOIN viaje_estado vje
+        ON vje.id=vj.id_viaje_estado
+      LEFT JOIN transporte_vehiculo tvh
+        ON tvh.id_vehiculo=vh.id
+      LEFT JOIN transporte tr
+        ON tr.id=tvh.id_transporte
+      LEFT JOIN viaje_tarifario vjtr
+        ON vjtr.id_viaje=vj.id
+      LEFT JOIN tarifario_cliente trcl
+        ON trcl.id=vjtr.id_tarifario_cliente
+      LEFT JOIN tarifario_transporte_general trtg
+        ON trtg.id=vjtr.id_tarifario_transporte_general
+      LEFT JOIN tarifario_transporte_especial trte
+        ON trte.id=vjtr.id_tarifario_transporte_especial
+      WHERE vj.activo=true
+    `;
 
     let result;
 
@@ -129,66 +165,6 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     await connection.queryWithParameters(query, [timestamp, userEmail, id]);
 
     return true;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const getBancos = async () => {
-  try {
-    let query = `
-      SELECT DISTINCT
-        banco as id, banco as descripcion
-      FROM cheque WHERE activo=TRUE`;
-
-    let result = await dbConnection.query(query);
-
-    return result.rows;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const getReferencias = async () => {
-  try {
-    let query = `
-      SELECT DISTINCT
-        referencia as id, referencia as descripcion
-      FROM cheque WHERE activo=TRUE`;
-
-    let result = await dbConnection.query(query);
-
-    return result.rows;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const getProveedores = async () => {
-  try {
-    let query = `
-      SELECT DISTINCT
-        proveedor as id, proveedor as descripcion
-      FROM cheque WHERE activo=TRUE`;
-
-    let result = await dbConnection.query(query);
-
-    return result.rows;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const getEstados = async () => {
-  try {
-    let query = `
-      SELECT DISTINCT
-        estado as id, estado as descripcion
-      FROM cheque WHERE activo=TRUE`;
-
-    let result = await dbConnection.query(query);
-
-    return result.rows;
   } catch (error) {
     throw error;
   }

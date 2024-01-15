@@ -7,7 +7,7 @@ export const isAuthenticated = async (req, res, next, tries = 0) => {
   const maxTries = 3;
   try {
     if (!req.isAuthenticated()) {
-      return res.redirect('/auth/unauthorized');
+      return res.status(401).json({ message: 'Necesita iniciar sesión' });
     }
   
     const result = await cca.acquireTokenByRefreshToken({
