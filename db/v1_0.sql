@@ -25,6 +25,7 @@ CREATE TABLE usuario (
 -- Crear tabla rol
 CREATE TABLE rol (
     id SERIAL PRIMARY KEY,
+    label VARCHAR(100) NOT NULL,
     descripcion VARCHAR(100) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
@@ -35,6 +36,7 @@ CREATE TABLE rol (
 -- Crear tabla permiso
 CREATE TABLE permiso (
     id SERIAL PRIMARY KEY,
+    label VARCHAR(100) NOT NULL,
     descripcion VARCHAR(100) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
@@ -42,17 +44,17 @@ CREATE TABLE permiso (
     activo BOOLEAN DEFAULT true NOT NULL
 );
 
--- Crear tabla usuario_rol
-CREATE TABLE usuario_rol (
+-- Crear tabla usuario_permiso
+CREATE TABLE usuario_permiso (
     id SERIAL PRIMARY KEY,
     id_usuario INTEGER NOT NULL,
-    id_rol INTEGER NOT NULL,
+    id_permiso INTEGER NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id),
-    FOREIGN KEY (id_rol) REFERENCES rol (id)
+    FOREIGN KEY (id_permiso) REFERENCES permiso (id)
 );
 
 -- Crear tabla rol_permiso
