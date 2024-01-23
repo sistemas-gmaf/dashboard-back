@@ -1,5 +1,4 @@
 import * as graph from '@microsoft/microsoft-graph-client';
-import streamifier from 'streamifier';
 
 export const getUserProfile = async ({ accessToken }) => {
   try {

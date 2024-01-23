@@ -21,5 +21,7 @@ export const MICROSOFT_REDIRECT_URI = process.env.MICROSOFT_REDIRECT_URI;
 export const MICROSOFT_AUTHORIZATION_URL = process.env.MICROSOFT_AUTHORIZATION_URL;
 export const MICROSOFT_TOKEN_URL = process.env.MICROSOFT_TOKEN_URL;
 export const MICROSOFT_AUTHORITY_URL = process.env.MICROSOFT_AUTHORITY_URL;
+export const MICROSOFT_APP_NAME = process.env.MICROSOFT_APP_NAME;
+export const MICROSOFT_APP_ID = process.env.MICROSOFT_APP_ID;
 
 export const FRONTEND_URL = process.env.FRONTEND_URL;

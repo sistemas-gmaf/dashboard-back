@@ -54,7 +54,8 @@ CREATE TABLE usuario_permiso (
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id),
-    FOREIGN KEY (id_permiso) REFERENCES permiso (id)
+    FOREIGN KEY (id_permiso) REFERENCES permiso (id),
+    CONSTRAINT uk_usuario_permiso UNIQUE (id_usuario, id_permiso)
 );
 
 -- Crear tabla rol_permiso
