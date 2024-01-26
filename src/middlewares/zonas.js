@@ -1,7 +1,7 @@
 import { createTransaction } from "../configs/dbConnection.js";
 import { getTimestamp } from "../utils/time.js";
 
-export const upsertVehiculoTipo = async (req, res, next) => {
+export const upsertZona = async (req, res, next) => {
   const { connection: previousConnection } = req.body;
   let connection;
   try {
@@ -10,25 +10,25 @@ export const upsertVehiculoTipo = async (req, res, next) => {
 
     const query = `
       WITH ins AS (
-        INSERT INTO vehiculo_tipo (descripcion, fecha_creacion)
+        INSERT INTO zona (descripcion, fecha_creacion)
         VALUES (UPPER(TRIM($1)), $2)
         ON CONFLICT (descripcion) DO NOTHING
         RETURNING id
       )
       SELECT id FROM ins
       UNION ALL
-      SELECT id FROM vehiculo_tipo
+      SELECT id FROM zona
       WHERE descripcion = UPPER(TRIM($1))
     `;
 
-    const result = await connection.queryWithParameters(query, [req.body.vehiculo_tipo, timestamp]);
+    const result = await connection.queryWithParameters(query, [req.body.zona, timestamp]);
 
-    req.body.vehiculo_tipo = result.rows[0].id;
+    req.body.zona = result.rows[0].id;
     req.body.connection = connection;
 
     next();
   } catch (error) {
     connection?.rollback();
-    res.status(500).json({ message: 'Error al crear/obtener vehiculo_tipo', error: error.message });
+    res.status(500).json({ message: 'Error al crear/obtener zona', error: error.message });
   }
 }

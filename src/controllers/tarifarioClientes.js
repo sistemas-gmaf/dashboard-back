@@ -14,11 +14,9 @@ export const get = async (req, res) => {
 }
 
 export const create = async (req, res) => {
-  let connection;
+  const { connection } = req.body;
 
   try {
-    connection = await createTransaction();
-
     const idTarifario = await tarifarioClientesService.create({ ...req.body, connection });
 
     await connection.commit();
@@ -30,12 +28,11 @@ export const create = async (req, res) => {
 }
 
 export const update = async (req, res) => {
-  let connection;
+  const { connection } = req.body;
   
   try {
     const { id } = req.params;
     const { mail: userEmail } = req.user.profile;
-    connection = await createTransaction();
 
     await tarifarioClientesService.update({ ...req.body, userEmail, connection, id });
 
