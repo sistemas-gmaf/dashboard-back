@@ -57,30 +57,34 @@ export const get = async ({ id }) => {
   }
 }
 
-export const create = async ({ correo, permisos: permisosString, connection }) => {
+export const create = async ({ userEmail, correo, permisos: permisosString, connection }) => {
   try {
     const permisos = JSON.parse(permisosString);
     const timestamp = getTimestamp();
 
     const query = `
-      INSERT INTO usuario(
-        correo, fecha_creacion, activo
-      )
-      VALUES (LOWER($1), $2, true)
-      RETURNING id
+      INSERT INTO usuario(correo, fecha_creacion, activo)
+        VALUES (LOWER(TRIM($1)), $2, true)
+      ON CONFLICT (correo) DO UPDATE
+        SET activo = true, fecha_ultima_edicion = $2, correo_ultima_edicion = $3
+      RETURNING id;
     `;
 
-    const result = await connection.queryWithParameters(query, [correo, timestamp]);
+    const result = await connection.queryWithParameters(query, [correo, timestamp, correo]);
     const idUsuario = result.rows[0].id;
+
+    const queryDeletePermisos = `DELETE FROM usuario_permiso WHERE id_usuario=$1`;
 
     const queryPermisos = `
       INSERT INTO usuario_permiso (id_usuario, id_permiso, fecha_creacion, activo)
-      VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4);
     `;
-
     // Obtener las claves y valores de permisos
     const permisoEntries = Object.entries(permisos);
-
+    
+    // Borrar y recrear permisos si existen
+    await connection.queryWithParameters(queryDeletePermisos, [idUsuario]);
+      
     // Ejecutar la query de upsert para cada permiso
     for (const [id_permiso, activo] of permisoEntries) {
       await connection.queryWithParameters(queryPermisos, [idUsuario, id_permiso, timestamp, activo]);

@@ -17,9 +17,11 @@ export const create = async (req, res) => {
   let connection;
 
   try {
+    const { mail: userEmail } = req.user.profile;
+
     connection = await createTransaction();
 
-    const idUsuario = await usuariosService.create({ ...req.body, connection });
+    const idUsuario = await usuariosService.create({ ...req.body, userEmail, connection });
 
     await connection.commit();
     res.status(201).json({ message: 'Usuario creado exitosamente', idUsuario });

@@ -15,7 +15,7 @@ CREATE INDEX "IDX_session_expire" ON "session" ("expire");
 -- Crear tabla usuario
 CREATE TABLE usuario (
     id SERIAL PRIMARY KEY,
-    correo VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
@@ -54,8 +54,7 @@ CREATE TABLE usuario_permiso (
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario (id),
-    FOREIGN KEY (id_permiso) REFERENCES permiso (id),
-    CONSTRAINT uk_usuario_permiso UNIQUE (id_usuario, id_permiso)
+    FOREIGN KEY (id_permiso) REFERENCES permiso (id)
 );
 
 -- Crear tabla rol_permiso
