@@ -8,7 +8,7 @@ export const get = async ({ id }) => {
         c.id, c.categoria,
         c.razon_social, c.referencia,
         c.importe, c.fecha, TO_CHAR(TO_DATE(fecha, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_formateada,
-        UPPER(c.estado) as estado, c.fecha_creacion
+        c.estado, c.fecha_creacion
       FROM
         compromiso as c
       WHERE
@@ -37,7 +37,7 @@ export const create = async ({ categoria, razon_social, referencia, estado, fech
       INSERT INTO compromiso(
         categoria, razon_social, referencia, estado, fecha, importe, fecha_creacion, activo
       )
-      VALUES ($1, $2, $3, UPPER($4), $5, $6, $7, true)
+      VALUES (UPPER(TRIM($1)), UPPER(TRIM($2)), UPPER(TRIM($3)), UPPER(TRIM($4)), $5, $6, $7, true)
       RETURNING id
     `;
 
@@ -66,22 +66,22 @@ export const update = async ({ id, userEmail, categoria, razon_social, referenci
 
     if (categoria !== undefined) {
       queryParams.push(categoria);
-      query += ', categoria=$' + (queryParams.length);
+      query += ', categoria=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (razon_social !== undefined) {
       queryParams.push(razon_social);
-      query += ', razon_social=$' + (queryParams.length);
+      query += ', razon_social=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (referencia !== undefined) {
       queryParams.push(referencia);
-      query += ', referencia=$' + (queryParams.length);
+      query += ', referencia=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (estado !== undefined) {
       queryParams.push(estado);
-      query += ', estado=$' + (queryParams.length);
+      query += ', estado=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (fecha !== undefined) {
