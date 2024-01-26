@@ -24,6 +24,45 @@ export const get = async ({ id }) => {
   }
 }
 
+export const getByTarifario = async ({ fecha_salida, cliente, vehiculo }) => {
+  try {
+    let query = `
+      SELECT DISTINCT z.id, z.descripcion
+      FROM zona z
+      JOIN tarifario_cliente tc ON z.id = tc.id_zona
+      WHERE TO_CHAR(tc.fecha_desde, 'YYYYMMDD') <= $1 
+        AND COALESCE(TO_CHAR(tc.fecha_hasta, 'YYYYMMDD'), $1) >= $1 
+        AND tc.id_cliente = $2 
+        AND tc.id_vehiculo_tipo = (SELECT id_vehiculo_tipo FROM vehiculo WHERE id = $3)
+        AND tc.activo=true
+      UNION
+      SELECT DISTINCT z.id, z.descripcion
+      FROM zona z
+      JOIN tarifario_transporte_especial te ON z.id = te.id_zona
+      WHERE TO_CHAR(te.fecha_desde, 'YYYYMMDD') <= $1 
+        AND COALESCE(TO_CHAR(te.fecha_hasta, 'YYYYMMDD'), $1) >= $1 
+        AND te.id_cliente = $2 
+        AND te.id_vehiculo_tipo = (SELECT id_vehiculo_tipo FROM vehiculo WHERE id = $3)
+        AND te.activo=true
+      UNION
+      SELECT DISTINCT z.id, z.descripcion
+      FROM zona z
+      JOIN tarifario_transporte_general tg ON z.id = tg.id_zona
+      WHERE TO_CHAR(tg.fecha_desde, 'YYYYMMDD') <= $1 
+        AND COALESCE(TO_CHAR(tg.fecha_hasta, 'YYYYMMDD'), $1) >= $1 
+        AND tg.id_cliente = $2 
+        AND tg.id_vehiculo_tipo = (SELECT id_vehiculo_tipo FROM vehiculo WHERE id = $3)
+        AND tg.activo=true    
+    `;
+    
+    const result = await dbConnection.query(query, [fecha_salida, cliente, vehiculo]);
+    
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const create = async ({ descripcion, connection }) => {
   try {
     const timestamp = getTimestamp();

@@ -13,6 +13,18 @@ export const get = async (req, res) => {
   }
 }
 
+export const getByTarifario = async (req, res) => {
+  try {
+    const { fecha_salida, cliente, vehiculo } = req.query;
+
+    const result = await zonasService.getByTarifario({ fecha_salida, cliente, vehiculo });
+
+    res.json({ data: result });
+  } catch (error) {
+    res.status(error?.statusCode || 500).json({ message: 'Error al obtener zonas', error });
+  }
+}
+
 export const create = async (req, res) => {
   let connection;
 

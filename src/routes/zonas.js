@@ -10,6 +10,11 @@ api.get('/zonas',
   zonasController.get
 );
 
+api.get('/zonas-tarifario',
+  authMiddleware.isAuthenticated,
+  zonasController.getByTarifario
+);
+
 api.post('/zonas',
   authMiddleware.isAuthenticated,
   multerMiddleware.upload.none(),
