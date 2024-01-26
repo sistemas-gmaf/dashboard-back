@@ -14,11 +14,9 @@ export const get = async (req, res) => {
 }
 
 export const create = async (req, res) => {
-  let connection;
+  const { connection } = req.body;
 
   try {
-    connection = await createTransaction();
-
     const idTarifario = await tarifarioTransportesService.create({ ...req.body, connection });
 
     await connection.commit();

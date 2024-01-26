@@ -55,6 +55,7 @@ export const get = async ({ id }) => {
 export const create = async ({ 
   vehiculo_tipo, 
   zona, 
+  cliente,
   monto, 
   monto_por_ayudante, 
   fecha_desde, 
@@ -73,9 +74,9 @@ export const create = async ({
         monto_por_ayudante, 
         fecha_desde, 
         fecha_hasta, 
-        fecha_creacion, 
-        activo
-      ) VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYYMMDD'), TO_DATE(5, 'YYYYMMDD'), $7, true)
+        fecha_creacion,
+        id_cliente
+      ) VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYYMMDD'), TO_DATE($6, 'YYYYMMDD'), $7, $8)
       RETURNING id
     `;
 
@@ -86,7 +87,8 @@ export const create = async ({
       monto_por_ayudante, 
       fecha_desde, 
       fecha_hasta, 
-      timestamp
+      timestamp,
+      cliente
     ]);
 
     if (sobreescribir_tarifario) {
