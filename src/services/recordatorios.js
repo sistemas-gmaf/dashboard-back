@@ -32,7 +32,7 @@ export const create = async ({ titulo, descripcion, fecha_limite, cantidad_dias_
     const timestamp = getTimestamp();
     let query = `
       INSERT INTO recordatorio(titulo, descripcion, fecha_limite, cantidad_dias_aviso, fecha_creacion, activo)
-      VALUES ($1, $2, $3, $4, $5, true)
+      VALUES (UPPER(TRIM($1)), UPPER(TRIM($2)), $3, $4, $5, true)
       RETURNING id
     `;
 
@@ -59,12 +59,12 @@ export const update = async ({ id, userEmail, titulo, descripcion, fecha_limite,
 
     if (titulo !== undefined) {
       queryParams.push(titulo);
-      query += ', titulo=$' + (queryParams.length);
+      query += ', titulo=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (descripcion !== undefined) {
       queryParams.push(descripcion);
-      query += ', descripcion=$' + (queryParams.length);
+      query += ', descripcion=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (fecha_limite !== undefined) {
