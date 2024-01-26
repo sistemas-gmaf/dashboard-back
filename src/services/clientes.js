@@ -31,7 +31,7 @@ export const create = async ({ cuit, razon_social, abreviacion_razon_social, tel
     const timestamp = getTimestamp();
     let query = `
       INSERT INTO cliente(cuit, razon_social, abreviacion_razon_social, telefono, correo, fecha_creacion, activo)
-      VALUES ($1, $2, $3, $4, $5, $6, true)
+      VALUES ($1, UPPER(TRIM($2)), UPPER(TRIM($3)), $4, LOWER(TRIM($5)), $6, true)
       RETURNING id
     `;
 
@@ -63,12 +63,12 @@ export const update = async ({ id, userEmail, cuit, razon_social, abreviacion_ra
 
     if (razon_social !== undefined) {
       queryParams.push(razon_social);
-      query += ', razon_social=$' + (queryParams.length);
+      query += ', razon_social=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (abreviacion_razon_social !== undefined) {
       queryParams.push(abreviacion_razon_social);
-      query += ', abreviacion_razon_social=$' + (queryParams.length);
+      query += ', abreviacion_razon_social=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (telefono !== undefined) {
@@ -78,7 +78,7 @@ export const update = async ({ id, userEmail, cuit, razon_social, abreviacion_ra
 
     if (correo !== undefined) {
       queryParams.push(correo);
-      query += ', correo=$' + (queryParams.length);
+      query += ', correo=LOWER(TRIM($' + (queryParams.length) + '))';
     }
 
     query += ' WHERE id=$' + (queryParams.length + 1);
