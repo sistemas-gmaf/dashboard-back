@@ -93,7 +93,7 @@ export const create = async ({
         fecha_creacion,
         activo
       ) values (
-        $1, $2, $3, $4, $5, true
+        UPPER(TRIM($1)), $2, $3, LOWER(TRIM($4)), $5, true
       )
       RETURNING id`;
 
@@ -122,7 +122,7 @@ export const update = async ({
     if (nombre) {
       const query = `
         UPDATE chofer SET
-          nombre=$1, fecha_ultima_edicion=$2, correo_ultima_edicion=$3
+          nombre=UPPER(TRIM($1)), fecha_ultima_edicion=$2, correo_ultima_edicion=$3
         WHERE id=$4
       `;
   
@@ -158,7 +158,7 @@ export const update = async ({
     if (correo) {
       const query = `
         UPDATE chofer SET
-          correo=$1, fecha_ultima_edicion=$2, correo_ultima_edicion=$3
+          correo=LOWER(TRIM($1)), fecha_ultima_edicion=$2, correo_ultima_edicion=$3
         WHERE id=$4
       `;
   
