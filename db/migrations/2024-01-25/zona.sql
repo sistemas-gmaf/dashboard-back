@@ -1,5 +1,4 @@
 INSERT INTO zona (descripcion, fecha_creacion) VALUES
-('AYUDANTE', current_date),
 ('COLECTA', current_date),
 ('Z1', current_date),
 ('Z2', current_date),
@@ -7,9 +6,6 @@ INSERT INTO zona (descripcion, fecha_creacion) VALUES
 ('PSV', current_date),
 ('Z4', current_date),
 ('SF-Z2-SV', current_date),
-('AYUDANTE2', current_date),
-('AYUDANTE3', current_date),
-('AYUDANTE1', current_date),
 ('GARIN', current_date),
 ('LA PLATA', current_date),
 ('LANUS', current_date),
