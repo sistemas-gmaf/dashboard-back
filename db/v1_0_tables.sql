@@ -102,16 +102,6 @@ CREATE TABLE documentacion (
 ALTER TABLE documentacion
 ADD CONSTRAINT unique_constraint_name UNIQUE (tipo_documentacion, tipo_poseedor, id_poseedor);
 
--- Crear tabla estado_cheque
-CREATE TABLE estado_cheque (
-    id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(50) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
-);
-
 -- Crear tabla cheque
 CREATE TABLE cheque (
     id SERIAL PRIMARY KEY,
@@ -158,7 +148,7 @@ CREATE TABLE transporte (
 -- Crear tabla vehiculo_tipo
 CREATE TABLE vehiculo_tipo (
     id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(30) NOT NULL,
+    descripcion VARCHAR(30) NOT NULL UNIQUE,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
@@ -206,7 +196,7 @@ CREATE TABLE chofer_vehiculo (
 -- Crear tabla zona
 CREATE TABLE zona (
     id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(150) NOT NULL UNIQUE,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
@@ -251,24 +241,7 @@ CREATE TABLE tarifario_transporte_general (
     id SERIAL PRIMARY KEY,
     id_vehiculo_tipo INTEGER NOT NULL,
     id_zona INTEGER NOT NULL,
-    monto NUMERIC(12, 2) NOT NULL,
-    monto_por_ayudante NUMERIC(12, 2) NOT NULL,
-    fecha_desde TIMESTAMP NOT NULL,
-    fecha_hasta TIMESTAMP NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_vehiculo_tipo) REFERENCES vehiculo_tipo (id),
-    FOREIGN KEY (id_zona) REFERENCES zona (id)
-);
-
--- Crear tabla tarifario_transporte_especial
-CREATE TABLE tarifario_transporte_especial (
-    id SERIAL PRIMARY KEY,
-    id_vehiculo_tipo INTEGER NOT NULL,
-    id_zona INTEGER NOT NULL,
-    id_transporte INTEGER NOT NULL,
+    id_cliente INTEGER NOT NULL,
     monto NUMERIC(12, 2) NOT NULL,
     monto_por_ayudante NUMERIC(12, 2) NOT NULL,
     fecha_desde TIMESTAMP NOT NULL,
@@ -279,7 +252,28 @@ CREATE TABLE tarifario_transporte_especial (
     activo BOOLEAN DEFAULT true NOT NULL,
     FOREIGN KEY (id_vehiculo_tipo) REFERENCES vehiculo_tipo (id),
     FOREIGN KEY (id_zona) REFERENCES zona (id),
-    FOREIGN KEY (id_transporte) REFERENCES transporte (id)
+    FOREIGN KEY (id_cliente) REFERENCES cliente (id)
+);
+
+-- Crear tabla tarifario_transporte_especial
+CREATE TABLE tarifario_transporte_especial (
+    id SERIAL PRIMARY KEY,
+    id_vehiculo_tipo INTEGER NOT NULL,
+    id_zona INTEGER NOT NULL,
+    id_transporte INTEGER NOT NULL,
+    id_cliente INTEGER NOT NULL,
+    monto NUMERIC(12, 2) NOT NULL,
+    monto_por_ayudante NUMERIC(12, 2) NOT NULL,
+    fecha_desde TIMESTAMP NOT NULL,
+    fecha_hasta TIMESTAMP NULL,
+    fecha_creacion TIMESTAMP NOT NULL,
+    fecha_ultima_edicion TIMESTAMP NULL,
+    correo_ultima_edicion VARCHAR(100) NULL,
+    activo BOOLEAN DEFAULT true NOT NULL,
+    FOREIGN KEY (id_vehiculo_tipo) REFERENCES vehiculo_tipo (id),
+    FOREIGN KEY (id_zona) REFERENCES zona (id),
+    FOREIGN KEY (id_transporte) REFERENCES transporte (id),
+    FOREIGN KEY (id_cliente) REFERENCES cliente (id)
 );
 
 -- Crear tabla viaje_estado
