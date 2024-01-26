@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as authMiddleware from '../middlewares/auth.js';
+import * as vehiculosMiddleware from '../middlewares/vehiculos.js';
 import * as multerMiddleware from '../middlewares/multer.js';
 import * as vehiculosController from '../controllers/vehiculos.js';
 
@@ -18,12 +19,14 @@ api.get('/vehiculos/:id',
 api.post('/vehiculos',
   authMiddleware.isAuthenticated,
   multerMiddleware.upload.single('vtv'),
+  vehiculosMiddleware.upsertVehiculoTipo,
   vehiculosController.create
 );
 
 api.patch('/vehiculos/:id',
   authMiddleware.isAuthenticated,
   multerMiddleware.upload.single('vtv'),
+  vehiculosMiddleware.upsertVehiculoTipo,
   vehiculosController.update
 );
 

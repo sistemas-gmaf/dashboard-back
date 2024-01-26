@@ -44,15 +44,13 @@ export const get = async (req, res) => {
  */
 export const create = async (req, res) => {
   const { accessToken } = req.user;
+  const { connection } = req.body;
   
   let vehiculoId;
   let driveId;
   let responseSaveFile;
-  let connection;
 
   try {
-    connection = await createTransaction();
-
     const { 
       chofer, patente, transporte, vehiculo_tipo 
     } = req.body;
@@ -88,7 +86,7 @@ export const create = async (req, res) => {
       });
     }
 
-    await connection.commit();
+    await connection?.commit();
     res.status(201).json({ message: 'Vehículo creado exitosamente' });
   } catch (error) {
     if (Boolean(responseSaveFile)) {
@@ -107,23 +105,19 @@ export const create = async (req, res) => {
  */
 export const update = async (req, res) => {
   const { accessToken } = req.user;
+  const { connection } = req.body;
 
-  let connection;
   let driveId;
   let responseSaveFile;
   
   try {
-    connection = await createTransaction();
-    
-    const { id } = req.params;
+    const { id } = req.body;
     const { mail: userEmail } = req.user.profile;
-    const { transporte, chofer, patente, vehiculo_tipo } = req.body;
+    const { patente, vehiculo_tipo } = req.body;
     const { file } = req;
 
     await vehiculosService.update({ 
       id, 
-      transporte, 
-      chofer, 
       patente, 
       vehiculo_tipo, 
       userEmail, 

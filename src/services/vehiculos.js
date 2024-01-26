@@ -13,7 +13,7 @@ export const get = async ({ id }) => {
         vt.descripcion as vehiculo_tipo_descripcion,
         c.id as chofer_id,
         c.nombre as chofer_nombre,
-        c.dni as chofer_dni,
+        COALESCE(c.dni, '-') as chofer_dni,
         t.id as transporte_id,
         t.nombre as transporte_nombre,
         t.descripcion as transporte_descripcion,
@@ -43,7 +43,6 @@ export const get = async ({ id }) => {
     } else {
       query += ' ORDER by v.id, c.id ASC) t1 ORDER BY t1.id';
     }
-    console.debug(query);
 
     if (Boolean(id)) {
       result = await dbConnection.query(query, [id]);
@@ -51,8 +50,6 @@ export const get = async ({ id }) => {
     } else {
       result = await dbConnection.query(query);
     }
-
-    console.debug({vehiculos: result.rows});
 
     return result.rows;
   } catch (error) {
@@ -76,7 +73,7 @@ export const create = async ({
         fecha_creacion,
         activo
       ) values (
-        $1, $2, $3, true
+        UPPER(TRIM($1)), $2, $3, true
       )
       RETURNING id`;
 
@@ -121,42 +118,16 @@ export const create = async ({
   }
 }
 
-export const update = async ({ id, transporte, chofer, patente, vehiculo_tipo, userEmail, connection }) => {
+export const update = async ({ id, patente, vehiculo_tipo, userEmail, connection }) => {
   try {
     const timestamp = getTimestamp();
 
-    if (Boolean(transporte)) {
-      const query = `
-        UPDATE 
-          transporte_vehiculo 
-        SET 
-          id_transporte=$1,
-          fecha_ultima_edicion=$2,
-          correo_ultima_edicion=$3
-        WHERE
-          id_vehiculo=$4
-      `;
-      await connection.queryWithParameters(query, [transporte, timestamp, userEmail, id]);
-    }
-    if (Boolean(chofer)) {
-      const query = `
-        UPDATE 
-          chofer_vehiculo 
-        SET 
-          id_chofer=$1,
-          fecha_ultima_edicion=$2,
-          correo_ultima_edicion=$3
-        WHERE
-          id_vehiculo=$4
-      `;
-      await connection.queryWithParameters(query, [chofer, timestamp, userEmail, id]);
-    }
     if (Boolean(patente)) {
       const query = `
         UPDATE 
           vehiculo 
         SET 
-          patente=$1,
+          patente=UPPER(TRIM($1)),
           fecha_ultima_edicion=$2,
           correo_ultima_edicion=$3
         WHERE
