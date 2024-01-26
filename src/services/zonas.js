@@ -82,3 +82,39 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     throw error;
   }
 }
+
+export const getByDescripcion = async ({ descripcion }) => {
+  try {
+    const query = `SELECT * FROM zona WHERE descripcion=$1`;
+
+    const result = await dbConnection.query(query, [descripcion]);
+
+    if (result.rowCount === 0) {
+      return false;
+    }
+
+    return result.rows[0].id;
+  } catch (error) {
+    throw error;    
+  }
+}
+
+export const upsert = async({ descripcion, connection }) => {
+  try {
+    const timestamp = getTimestamp();
+
+    const query = `
+      INSERT INTO zona (descripcion, fecha_creacion)
+        VALUES ($1, $2)
+      ON CONFLICT (descripcion) DO 
+        UPDATE SET descripcion = EXCLUDED.descripcion
+      RETURNING id
+    `;
+
+    const result = await connection.queryWithParameters(query, [descripcion, timestamp]);
+
+    return result.rows[0].id;
+  } catch (error) {
+    throw error;
+  }
+}

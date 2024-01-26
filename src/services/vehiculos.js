@@ -4,8 +4,9 @@ import { getTimestamp } from "../utils/time.js";
 export const get = async ({ id }) => {
   try {
     let query = `
-      SELECT 
-        v.id,
+      SELECT * FROM (SELECT
+        ROW_NUMBER() OVER () AS id,
+        v.id as id_vehiculo,
         v.patente as vehiculo_patente,
         v.fecha_creacion as vehiculo_fecha_creacion,
         vt.id as vehiculo_tipo_id,
@@ -38,12 +39,20 @@ export const get = async ({ id }) => {
     let result;
 
     if (Boolean(id)) {
-      query += ' and v.id=$1';
+      query += ' ORDER by v.id, c.id ASC) t1 WHERE t1.id=$1 ORDER BY t1.id';
+    } else {
+      query += ' ORDER by v.id, c.id ASC) t1 ORDER BY t1.id';
+    }
+    console.debug(query);
+
+    if (Boolean(id)) {
       result = await dbConnection.query(query, [id]);
       result.rows = result.rows[0];
     } else {
       result = await dbConnection.query(query);
     }
+
+    console.debug({vehiculos: result.rows});
 
     return result.rows;
   } catch (error) {
@@ -203,6 +212,41 @@ export const getTipos = async () => {
     const result = await dbConnection.query(query);
   
     return result.rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getTiposByDescripcion = async ({ descripcion }) => {
+  try {
+    const query = `SELECT * FROM vehiculo_tipo WHERE descripcion=$1`;
+
+    const result = await dbConnection.query(query, [descripcion]);
+
+    if (result.rowCount === 0) {
+      return false;
+    }
+
+    return result.rows[0].id;
+  } catch (error) {
+    throw error;    
+  }
+}
+
+export const upsertTipos = async ({ descripcion, connection }) => {
+  try {
+    const timestamp = getTimestamp();
+    const query = `
+      INSERT INTO vehiculo_tipo (descripcion, fecha_creacion)
+      VALUES ($1, $2)
+      ON CONFLICT (descripcion) DO 
+      UPDATE SET descripcion = EXCLUDED.descripcion
+      RETURNING id
+    `;
+
+    const result = await connection.queryWithParameters(query, [descripcion, timestamp]);
+
+    return result.rows[0].id;
   } catch (error) {
     throw error;
   }

@@ -112,3 +112,23 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     throw error;
   }
 }
+
+export const getByRazonSocial = async ({ razon_social }) => {
+  try {
+    const query = `
+      SELECT id FROM cliente 
+      WHERE razon_social=$1
+      OR abreviacion_razon_social=$1
+    `;
+
+    const result = await dbConnection.query(query, [razon_social]);
+
+    if (result.rowCount === 0) {
+      return false;
+    }
+
+    return result.rows[0].id;
+  } catch (error) {
+    throw error;
+  }
+}

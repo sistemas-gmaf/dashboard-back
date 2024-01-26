@@ -10,6 +10,8 @@ export const get = async ({ id }) => {
         vt.descripcion AS vehiculo_tipo,
         z.id AS id_zona,
         z.descripcion AS zona,
+        cl.id AS id_cliente,
+        cl.abreviacion_razon_social AS cliente,
         tte.id_transporte,
         tr.nombre as transporte,
         tte.monto,
@@ -32,6 +34,8 @@ export const get = async ({ id }) => {
         ON z.id=tte.id_zona
       LEFT JOIN transporte tr
         ON tr.id=tte.id_transporte
+      LEFT JOIN cliente cl
+        ON cl.id=tte.id_cliente
       WHERE
         tte.activo=TRUE
     `;

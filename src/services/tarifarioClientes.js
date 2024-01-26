@@ -170,3 +170,102 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     throw error;
   }
 }
+
+export const massiveUpsert = async ({
+  vehiculo_tipo,
+  zona,
+  cliente,
+  monto,
+  monto_por_ayudante,
+  fecha_desde,
+  userEmail,
+  connection
+}) => {
+  try {
+    const timestamp = getTimestamp();
+
+    const queryGetIdExisting = `
+      SELECT id
+      FROM tarifario_cliente
+      WHERE id_vehiculo_tipo = $1
+          AND id_zona = $2
+          AND id_cliente = $3
+          AND fecha_desde < TO_DATE($4, 'YYYYMMDD')
+          AND COALESCE(fecha_hasta, TO_DATE($4, 'YYYYMMDD')) >= TO_DATE($4, 'YYYYMMDD')
+          AND activo=true
+    `;
+
+    const queryGetIdExistingWithSameDate = `
+      SELECT id
+      FROM tarifario_cliente
+      WHERE id_vehiculo_tipo = $1
+          AND id_zona = $2
+          AND id_cliente = $3
+          AND fecha_desde = TO_DATE($4, 'YYYYMMDD')
+          AND activo=true
+    `;
+
+    const queryUpdateExisting = `
+      UPDATE tarifario_cliente
+      SET fecha_hasta = TO_DATE($1, 'YYYYMMDD') - INTERVAL '1 day',
+          fecha_ultima_edicion = $2,
+          correo_ultima_edicion = $3
+      WHERE id = $4
+    `;
+
+    const queryDeleteWithSameDate = `
+      UPDATE tarifario_cliente
+      SET activo = false,
+          fecha_ultima_edicion = $1,
+          correo_ultima_edicion = $2
+      WHERE id = $3
+    `;
+
+    const queryInsertNew = `
+      INSERT INTO tarifario_cliente (
+        id_vehiculo_tipo, 
+        id_zona,
+        id_cliente,
+        monto, 
+        monto_por_ayudante,
+        fecha_desde,
+        fecha_creacion
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
+    `;
+
+    const resultGetExisting = await connection.queryWithParameters(queryGetIdExisting, [
+      vehiculo_tipo, zona, cliente, fecha_desde
+    ]);
+
+    const resultGetExistingWithSameDate = await connection.queryWithParameters(queryGetIdExistingWithSameDate, [
+      vehiculo_tipo, zona, cliente, fecha_desde
+    ]);
+
+    // Si hay un tarifario anterior a la fecha_desde se finaliza en el dia anterior
+    if (resultGetExisting.rows.length > 0) {
+      const idExisting = resultGetExisting.rows[0].id;
+
+      await connection.queryWithParameters(queryUpdateExisting, [
+        fecha_desde, timestamp, userEmail, idExisting
+      ]);
+    }
+
+    // Si hay un tarifario con la misma fecha_desde se inhabilita para guardar el nuevo
+    if (resultGetExistingWithSameDate.rows.length > 0) {
+      const idExisting = resultGetExistingWithSameDate.rows[0].id;
+
+      await connection.queryWithParameters(queryDeleteWithSameDate, [
+        timestamp, userEmail, idExisting
+      ]);
+    }
+
+    await connection.queryWithParameters(queryInsertNew, [
+      vehiculo_tipo, zona, cliente, monto, monto_por_ayudante, fecha_desde, timestamp
+    ]);
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+}
