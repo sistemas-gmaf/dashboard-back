@@ -9,6 +9,7 @@ export const get = async ({ id }) => {
         t.id, 
         t.nombre, 
         COALESCE(NULLIF(t.descripcion, ''), '-') as descripcion, 
+        TO_CHAR(t.fecha_creacion, 'DD/MM/YYYY') as fecha_creacion_formateada, 
         t.fecha_creacion, 
         t.fecha_ultima_edicion, 
         t.correo_ultima_edicion,
@@ -42,7 +43,7 @@ export const create = async ({ nombre, descripcion, connection }) => {
     const timestamp = getTimestamp();
     let query = `
       INSERT INTO transporte(nombre, descripcion, fecha_creacion, activo)
-      VALUES ($1, $2, $3, true)
+      VALUES (UPPER(TRIM($1)), COALESCE(UPPER(TRIM($2)), ''), $3, true)
       RETURNING id
     `;
 
@@ -68,12 +69,12 @@ export const update = async ({ id, userEmail, nombre, descripcion, connection })
     const queryParams = [timestamp, userEmail];
 
     if (nombre !== undefined) {
-      query += ', nombre=$3';
+      query += ', nombre=UPPER(TRIM($3))';
       queryParams.push(nombre);
     }
 
     if (descripcion !== undefined) {
-      query += ', descripcion=$' + (nombre !== undefined ? '4' : '3');
+      query += ', descripcion=UPPER(TRIM($' + (nombre !== undefined ? '4' : '3') + '))';
       queryParams.push(descripcion);
     }
 
