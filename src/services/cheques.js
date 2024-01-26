@@ -37,7 +37,7 @@ export const create = async ({ fecha_emision, fecha_pago, numero, banco, importe
       INSERT INTO cheque(
         fecha_emision, fecha_pago, numero, banco, importe, referencia, proveedor, estado, fecha_creacion, activo
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+      VALUES ($1, $2, $3, UPPER(TRIM($4)), $5, UPPER(TRIM($6)), UPPER(TRIM($7)), UPPER(TRIM($8)), $9, true)
       RETURNING id
     `;
 
@@ -79,7 +79,7 @@ export const update = async ({ id, userEmail, fecha_emision, fecha_pago, numero,
 
     if (banco !== undefined) {
       queryParams.push(banco);
-      query += ', banco=$' + (queryParams.length);
+      query += ', banco=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (importe !== undefined) {
@@ -89,17 +89,17 @@ export const update = async ({ id, userEmail, fecha_emision, fecha_pago, numero,
 
     if (referencia !== undefined) {
       queryParams.push(referencia);
-      query += ', referencia=$' + (queryParams.length);
+      query += ', referencia=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (proveedor !== undefined) {
       queryParams.push(proveedor);
-      query += ', proveedor=$' + (queryParams.length);
+      query += ', proveedor=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     if (estado !== undefined) {
       queryParams.push(estado);
-      query += ', estado=$' + (queryParams.length);
+      query += ', estado=UPPER(TRIM($' + (queryParams.length) + '))';
     }
 
     query += ' WHERE id=$' + (queryParams.length + 1);
