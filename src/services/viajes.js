@@ -169,3 +169,74 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     throw error;
   }
 }
+
+export const calculateTarifaTransporte = async ({ id_vehiculo_tipo, id_zona, id_cliente, fecha_salida }) => {
+  try {
+    let query = `
+      WITH TransporteTarifario AS (
+          SELECT DISTINCT
+              COALESCE(tte.id, ttg.id) AS tarifario_id,
+              COALESCE(tte.id_vehiculo_tipo, ttg.id_vehiculo_tipo) AS id_vehiculo_tipo,
+              COALESCE(tte.id_zona, ttg.id_zona) AS id_zona,
+              COALESCE(tte.id_cliente, ttg.id_cliente) AS id_cliente,
+              COALESCE(tte.monto, ttg.monto) AS monto,
+              COALESCE(tte.monto_por_ayudante, ttg.monto_por_ayudante) AS monto_por_ayudante,
+              COALESCE(tte.fecha_desde, ttg.fecha_desde) AS fecha_desde,
+              COALESCE(tte.fecha_hasta, ttg.fecha_hasta) AS fecha_hasta,
+              CASE WHEN tte.id IS NOT NULL THEN 'Transporte Especial' ELSE 'Transporte General' END AS tipo_tarifario
+          FROM transporte t
+          LEFT JOIN tarifario_transporte_especial tte
+              ON t.id = tte.id_transporte
+              AND tte.id_vehiculo_tipo = $1
+              AND tte.id_zona = $2
+              AND tte.id_cliente = $3
+              AND TO_CHAR(tte.fecha_desde, 'YYYYMMDD') <= $4
+              AND COALESCE(TO_CHAR(tte.fecha_hasta, 'YYYYMMDD'), $4) >= $4
+              AND tte.activo=TRUE
+          LEFT JOIN tarifario_transporte_general ttg
+              ON ttg.id_vehiculo_tipo = $1
+              AND ttg.id_zona = $2
+              AND ttg.id_cliente = $3
+              AND TO_CHAR(ttg.fecha_desde, 'YYYYMMDD') <= $4
+              AND COALESCE(TO_CHAR(ttg.fecha_hasta, 'YYYYMMDD'), $4) >= $4
+              AND ttg.activo=TRUE
+      )
+      SELECT * FROM TransporteTarifario
+    `;
+
+    const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida]);
+
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const calculateTarifaCliente = async ({ id_vehiculo_tipo, id_zona, id_cliente, fecha_salida }) => {
+  try {
+    let query = `
+      SELECT
+          tc.id AS tarifario_id,
+          tc.id_vehiculo_tipo,
+          tc.id_zona,
+          tc.id_cliente,
+          tc.monto,
+          tc.monto_por_ayudante,
+          tc.fecha_desde,
+          tc.fecha_hasta,
+          'Cliente' AS tipo_tarifario
+      FROM tarifario_cliente tc
+      WHERE tc.id_vehiculo_tipo = $1
+          AND tc.id_zona = $2
+          AND tc.id_cliente = $3
+          AND TO_CHAR(tc.fecha_desde, 'YYYYMMDD') <= $4
+          AND COALESCE(TO_CHAR(tc.fecha_hasta, 'YYYYMMDD'), $4) >= $4;    
+    `;
+
+    const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida]);
+
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+}

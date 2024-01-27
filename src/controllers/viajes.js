@@ -127,3 +127,14 @@ export const getEstados = async (req, res) => {
     res.status(error?.statusCode || 500).json({ message: 'Error al obtener viajes', error });
   }
 }
+
+export const calculateTarifas = async (req, res) => {
+  try {
+    const tarifaTransporte = await viajesService.calculateTarifaTransporte({ ...req.query });
+    const tarifaCliente = await viajesService.calculateTarifaCliente({ ...req.query });
+
+    res.json({ data: [ tarifaCliente, tarifaTransporte ] });
+  } catch (error) {
+    res.status(error?.statusCode || 500).json({ message: 'Error al obtener viajes', error });
+  }
+}

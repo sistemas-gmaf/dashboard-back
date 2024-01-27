@@ -32,4 +32,9 @@ api.delete('/viajes/:id',
   viajesController.softDelete
 );
 
+api.get('/viajes-calcular-tarifa',
+  authMiddleware.isAuthenticated,
+  viajesController.calculateTarifas
+)
+
 export default api;
