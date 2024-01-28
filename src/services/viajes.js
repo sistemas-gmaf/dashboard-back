@@ -1,7 +1,7 @@
 import { dbConnection } from "../configs/dbConnection.js";
 import { getTimestamp } from "../utils/time.js";
 
-export const get = async ({ id }) => {
+export const get = async ({ id, estado }) => {
   try {
     let query = `
       SELECT 
@@ -51,9 +51,13 @@ export const get = async ({ id }) => {
     let result;
 
     if (Boolean(id)) {
-      query += ' and id=$1';
+      query += ' and vj.id=$1';
       result = await dbConnection.query(query, [id]);
       result.rows = result.rows[0];
+    } else if (Boolean(estado)) {
+      query += ' and vj.estado=$1';
+      console.log(query)
+      result = await dbConnection.query(query, [estado]);
     } else {
       result = await dbConnection.query(query);
     }

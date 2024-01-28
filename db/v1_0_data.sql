@@ -1,9 +1,5 @@
 BEGIN;
 
-	INSERT INTO viaje_estado(descripcion, fecha_creacion) VALUES
-		('APROBADO', CURRENT_DATE), 
-		('PENDIENTE', CURRENT_DATE);
-
 	INSERT INTO usuario(correo, fecha_creacion) VALUES
 			('sistemas@grupomaf.com.ar', current_timestamp);
 

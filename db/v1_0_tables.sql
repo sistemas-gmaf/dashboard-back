@@ -308,7 +308,6 @@ CREATE TABLE viaje (
     FOREIGN KEY (id_cliente) REFERENCES cliente (id),
     FOREIGN KEY (id_vehiculo) REFERENCES vehiculo (id),
     FOREIGN KEY (id_zona_destino) REFERENCES zona (id),
-    FOREIGN KEY (id_viaje_estado) REFERENCES viaje_estado (id),
     
     FOREIGN KEY (id_tarifario_cliente) REFERENCES tarifario_cliente (id),
     FOREIGN KEY (id_tarifario_transporte_general) REFERENCES tarifario_transporte_general (id),

@@ -146,7 +146,7 @@ export const getEspecial = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await viajesService.getEspecial({ id });
+    const result = await viajesService.get({ id, estado: 'PENDIENTE' });
 
     res.json({ data: result });
   } catch (error) {
