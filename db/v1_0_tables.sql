@@ -275,18 +275,21 @@ CREATE TABLE tarifario_transporte_especial (
     FOREIGN KEY (id_cliente) REFERENCES cliente (id)
 );
 
--- Crear tabla viaje_estado
-CREATE TABLE viaje_estado (
+-- Crear tabla tarifario_viaje_especial
+CREATE TABLE tarifario_viaje_especial (
     id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
+    monto_cliente NUMERIC NOT NULL,
+    monto_cliente_por_ayudante NUMERIC NOT NULL,
+    monto_transporte NUMERIC NOT NULL,
+    monto_transporte_por_ayudante NUMERIC NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL
 );
 
--- Crear tabla viaje_remito_tipo
-CREATE TABLE viaje_remito_tipo (
+-- Crear tabla viaje_estado
+CREATE TABLE viaje_estado (
     id SERIAL PRIMARY KEY,
     descripcion VARCHAR(100) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
@@ -302,9 +305,12 @@ CREATE TABLE viaje (
     id_vehiculo INTEGER NOT NULL,
     id_zona_destino INTEGER NOT NULL,
     fecha_salida CHAR(8),
-    id_viaje_estado INTEGER NOT NULL,
-    segundo_viaje_porcentaje INTEGER,
     cantidad_ayudantes INTEGER DEFAULT 0 NOT NULL,
+    id_viaje_estado INTEGER NOT NULL,
+    id_tarifario_cliente INTEGER NOT NULL,
+    id_tarifario_transporte_general INTEGER,
+    id_tarifario_transporte_especial INTEGER,
+    id_tarifario_viaje_especial INTEGER,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
@@ -312,68 +318,36 @@ CREATE TABLE viaje (
     FOREIGN KEY (id_cliente) REFERENCES cliente (id),
     FOREIGN KEY (id_vehiculo) REFERENCES vehiculo (id),
     FOREIGN KEY (id_zona_destino) REFERENCES zona (id),
-    FOREIGN KEY (id_viaje_estado) REFERENCES viaje_estado (id)
+    FOREIGN KEY (id_viaje_estado) REFERENCES viaje_estado (id),
+    
+    FOREIGN KEY (id_tarifario_cliente) REFERENCES tarifario_cliente (id),
+    FOREIGN KEY (id_tarifario_transporte_general) REFERENCES tarifario_transporte_general (id),
+    FOREIGN KEY (id_tarifario_transporte_especial) REFERENCES tarifario_transporte_especial (id),
+    FOREIGN KEY (id_tarifario_viaje_especial) REFERENCES tarifario_viaje_especial (id)
 );
 
 -- Crear tabla viaje_remito
 CREATE TABLE viaje_remito (
     id SERIAL PRIMARY KEY,
+    numero VARCHAR(300),
     id_viaje INTEGER NOT NULL,
-    id_viaje_remito_tipo INTEGER NOT NULL,
-    referencia VARCHAR(100),
-    observacion TEXT,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_viaje) REFERENCES viaje (id),
-    FOREIGN KEY (id_viaje_remito_tipo) REFERENCES viaje_remito_tipo (id)
+    FOREIGN KEY (id_viaje) REFERENCES viaje (id)
 );
 
--- Crear tabla viaje_bitacora
-CREATE TABLE viaje_bitacora (
+-- Crear tabla viaje_remito_observacion
+CREATE TABLE viaje_remito_observacion (
     id SERIAL PRIMARY KEY,
-    id_viaje INTEGER NOT NULL,
+    id_viaje_remito INTEGER NOT NULL,
     observacion TEXT NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
     activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_viaje) REFERENCES viaje (id)
-);
-
---Crear tabla viaje_tarifario
-CREATE TABLE viaje_tarifario (
-    id SERIAL PRIMARY KEY,
-    id_viaje INTEGER NOT NULL,
-    id_tarifario_cliente INTEGER NOT NULL,
-    id_tarifario_transporte_general INTEGER,
-    id_tarifario_transporte_especial INTEGER,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_viaje) REFERENCES viaje (id),
-    FOREIGN KEY (id_tarifario_cliente) REFERENCES tarifario_cliente (id),
-    FOREIGN KEY (id_tarifario_transporte_general) REFERENCES tarifario_transporte_general (id),
-    FOREIGN KEY (id_tarifario_transporte_especial) REFERENCES tarifario_transporte_especial (id)
-);
-
--- Crear tabla tarifario_viaje_especial
-CREATE TABLE tarifario_viaje_especial (
-    id SERIAL PRIMARY KEY,
-    id_viaje INTEGER NOT NULL,
-    monto_cliente NUMERIC NOT NULL,
-    monto_cliente_por_ayudante NUMERIC NOT NULL,
-    monto_transporte NUMERIC NOT NULL,
-    monto_transporte_por_ayudante NUMERIC NOT NULL,
-    aprobado BOOLEAN,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL,
-    FOREIGN KEY (id_viaje) REFERENCES viaje (id)
+    FOREIGN KEY (id_viaje_remito) REFERENCES viaje_remito (id)
 );
 
 -- Crear tabla transporte_vehiculo

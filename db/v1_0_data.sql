@@ -1,9 +1,13 @@
 BEGIN;
 
+	INSERT INTO viaje_estado(descripcion, fecha_creacion) VALUES
+		('APROBADO', CURRENT_DATE), 
+		('PENDIENTE', CURRENT_DATE);
+
 	INSERT INTO usuario(correo, fecha_creacion) VALUES
 			('sistemas@grupomaf.com.ar', current_timestamp);
 
-	INSERT INTO permiso (label, descripcion, fecha_creacion) VALUES
+	INSERT INTO permiso(label, descripcion, fecha_creacion) VALUES
 			('VER_INICIO', 'Ver inicio', CURRENT_DATE),
 			('VER_TRANSPORTES', 'Ver transportes', CURRENT_DATE),
 			('VER_VEHICULOS', 'Ver vehículos', CURRENT_DATE),
@@ -247,5 +251,67 @@ BEGIN;
 		(59, 1, CURRENT_DATE),
 
 		(60, 1, CURRENT_DATE);
+
+	INSERT INTO usuario_permiso (id, id_usuario, id_permiso, fecha_creacion) VALUES 
+    (20, 1, 20, CURRENT_DATE),
+    (1, 1, 1, CURRENT_DATE),
+    (2, 1, 2, CURRENT_DATE),
+    (3, 1, 3, CURRENT_DATE),
+    (4, 1, 4, CURRENT_DATE),
+    (5, 1, 5, CURRENT_DATE),
+    (6, 1, 6, CURRENT_DATE),
+    (7, 1, 7, CURRENT_DATE),
+    (8, 1, 8, CURRENT_DATE),
+    (9, 1, 9, CURRENT_DATE),
+    (10, 1, 10, CURRENT_DATE),
+    (11, 1, 11, CURRENT_DATE),
+    (12, 1, 12, CURRENT_DATE),
+    (13, 1, 13, CURRENT_DATE),
+    (14, 1, 14, CURRENT_DATE),
+    (15, 1, 15, CURRENT_DATE),
+    (16, 1, 16, CURRENT_DATE),
+    (17, 1, 17, CURRENT_DATE),
+    (18, 1, 18, CURRENT_DATE),
+    (19, 1, 19, CURRENT_DATE),
+    (21, 1, 21, CURRENT_DATE),
+    (22, 1, 22, CURRENT_DATE),
+    (23, 1, 23, CURRENT_DATE),
+    (24, 1, 24, CURRENT_DATE),
+    (25, 1, 25, CURRENT_DATE),
+    (26, 1, 26, CURRENT_DATE),
+    (27, 1, 27, CURRENT_DATE),
+    (28, 1, 28, CURRENT_DATE),
+    (29, 1, 29, CURRENT_DATE),
+    (30, 1, 30, CURRENT_DATE),
+    (31, 1, 31, CURRENT_DATE),
+    (32, 1, 32, CURRENT_DATE),
+    (33, 1, 33, CURRENT_DATE),
+    (34, 1, 34, CURRENT_DATE),
+    (35, 1, 35, CURRENT_DATE),
+    (36, 1, 36, CURRENT_DATE),
+    (37, 1, 37, CURRENT_DATE),
+    (38, 1, 38, CURRENT_DATE),
+    (39, 1, 39, CURRENT_DATE),
+    (40, 1, 40, CURRENT_DATE),
+    (41, 1, 41, CURRENT_DATE),
+    (42, 1, 42, CURRENT_DATE),
+    (43, 1, 43, CURRENT_DATE),
+    (44, 1, 44, CURRENT_DATE),
+    (45, 1, 45, CURRENT_DATE),
+    (46, 1, 46, CURRENT_DATE),
+    (47, 1, 47, CURRENT_DATE),
+    (48, 1, 48, CURRENT_DATE),
+    (49, 1, 49, CURRENT_DATE),
+    (50, 1, 50, CURRENT_DATE),
+    (51, 1, 51, CURRENT_DATE),
+    (52, 1, 52, CURRENT_DATE),
+    (53, 1, 53, CURRENT_DATE),
+    (54, 1, 54, CURRENT_DATE),
+    (55, 1, 55, CURRENT_DATE),
+    (56, 1, 56, CURRENT_DATE),
+    (57, 1, 57, CURRENT_DATE),
+    (58, 1, 58, CURRENT_DATE),
+    (59, 1, 59, CURRENT_DATE),
+    (60, 1, 60, CURRENT_DATE);
 
 COMMIT;
