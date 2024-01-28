@@ -245,8 +245,7 @@ export const getEspecial = async ({ id }) => {
   try {
     let query = `
       SELECT 
-        tve.id,
-        tve.id_viaje,
+        vj.id as id_viaje,
 
         tve.monto_cliente,
         to_char(tve.monto_cliente, '$999,999,999.99') AS monto_cliente_formateado,
@@ -260,7 +259,6 @@ export const getEspecial = async ({ id }) => {
         tve.monto_transporte_por_ayudante,
         to_char(tve.monto_transporte_por_ayudante, '$999,999,999.99') AS monto_transporte_por_ayudante_formateado,
 
-        tve.aprobado,
         tve.fecha_creacion,
         vj.fecha_salida,
         TO_CHAR(TO_DATE(vj.fecha_salida, 'YYYYMMDD'), 'DD/MM/YYYY') AS fecha_salida_formateada,
@@ -269,17 +267,12 @@ export const getEspecial = async ({ id }) => {
         z.descripcion AS zona,
         cl.abreviacion_razon_social AS cliente,
         tr.nombre as transporte,
-        CASE
-          WHEN tve.aprobado=TRUE THEN 'APROBADO'
-          WHEN tve.aprobado=FALSE THEN 'RECHAZADO'
-          ELSE 'PENDIENTE'
-        END AS estado,
         vj.correo_ultima_edicion AS viaje_correo_ultima_edicion,
         vj.cantidad_ayudantes
       FROM
-        tarifario_viaje_especial tve
-      LEFT JOIN viaje vj
-        ON tve.id_viaje=vj.id
+        viaje vj
+      INNER JOIN tarifario_viaje_especial tve
+        ON tve.id=vj.id_tarifario_viaje_especial
       LEFT JOIN vehiculo vh
         ON vj.id_vehiculo=vh.id
       LEFT JOIN vehiculo_tipo vht
