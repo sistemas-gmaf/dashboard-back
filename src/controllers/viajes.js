@@ -25,15 +25,18 @@ export const get = async (req, res) => {
  * @param {Response} res 
  */
 export const create = async (req, res) => {
+  const { connection: previousConnection } = req.body;
   let connection;
 
   try {
-    connection = await createTransaction();
+    connection = previousConnection || await createTransaction();
 
-    const idviaje = await viajesService.create({ ...req.body, connection });
+    const id_viaje = await viajesService.create({ ...req.body.viaje, connection });
+
+    await viajesService.createViajeRemito({ ...req.body.remito, id_viaje, connection });
 
     await connection.commit();
-    res.status(201).json({ message: 'viaje creado exitosamente', idviaje });
+    res.status(201).json({ message: 'viaje creado exitosamente', id_viaje });
   } catch (error) {
     await connection?.rollback();
     res.status(error?.statusCode || 500).json({ message: 'Error al crear viaje', error: error.message });

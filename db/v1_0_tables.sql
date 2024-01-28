@@ -288,16 +288,6 @@ CREATE TABLE tarifario_viaje_especial (
     activo BOOLEAN DEFAULT true NOT NULL
 );
 
--- Crear tabla viaje_estado
-CREATE TABLE viaje_estado (
-    id SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL,
-    fecha_creacion TIMESTAMP NOT NULL,
-    fecha_ultima_edicion TIMESTAMP NULL,
-    correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
-);
-
 -- Crear tabla viaje
 CREATE TABLE viaje (
     id SERIAL PRIMARY KEY,
@@ -306,7 +296,7 @@ CREATE TABLE viaje (
     id_zona_destino INTEGER NOT NULL,
     fecha_salida CHAR(8),
     cantidad_ayudantes INTEGER DEFAULT 0 NOT NULL,
-    id_viaje_estado INTEGER NOT NULL,
+    estado VARCHAR(15) NOT NULL,
     id_tarifario_cliente INTEGER NOT NULL,
     id_tarifario_transporte_general INTEGER,
     id_tarifario_transporte_especial INTEGER,

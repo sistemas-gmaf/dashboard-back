@@ -18,7 +18,7 @@ export const get = async ({ id }) => {
         vht.descripcion AS vehiculo_tipo,     
         vh.patente AS vehiculo_patente,   
         z.descripcion AS zona,
-        vje.descripcion AS estado
+        vj.estado
       FROM 
         viaje vj
       LEFT JOIN cliente cl
@@ -33,8 +33,6 @@ export const get = async ({ id }) => {
         ON ch.id=chvh.id_chofer
       LEFT JOIN zona z
         ON z.id=vj.id_zona_destino
-      LEFT JOIN viaje_estado vje
-        ON vje.id=vj.id_viaje_estado
       LEFT JOIN transporte_vehiculo tvh
         ON tvh.id_vehiculo=vh.id
       LEFT JOIN transporte tr
@@ -66,18 +64,28 @@ export const get = async ({ id }) => {
   }
 }
 
-export const create = async ({ fecha_emision, fecha_pago, numero, banco, importe, referencia, proveedor, estado, connection }) => {
+export const create = async ({ 
+  id_cliente, id_vehiculo, id_zona_destino, fecha_salida, cantidad_ayudantes,
+  id_tarifario_cliente, id_tarifario_transporte_general, id_tarifario_transporte_especial,
+  id_tarifario_viaje_especial, estado, connection 
+}) => {
   try {
     const timestamp = getTimestamp();
     let query = `
-      INSERT INTO cheque(
-        fecha_emision, fecha_pago, numero, banco, importe, referencia, proveedor, estado, fecha_creacion, activo
+      INSERT INTO viaje(
+        id_cliente, id_vehiculo, id_zona_destino, fecha_salida, cantidad_ayudantes,
+        id_tarifario_cliente, id_tarifario_transporte_general, id_tarifario_transporte_especial,
+        id_tarifario_viaje_especial, estado, fecha_creacion
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING id
     `;
 
-    const result = await connection.queryWithParameters(query, [fecha_emision, fecha_pago, numero, banco, importe, referencia, proveedor, estado, timestamp]);
+    const result = await connection.queryWithParameters(query, [
+      id_cliente, id_vehiculo, id_zona_destino, fecha_salida, cantidad_ayudantes,
+      id_tarifario_cliente, id_tarifario_transporte_general, id_tarifario_transporte_especial,
+      id_tarifario_viaje_especial, estado, timestamp
+    ]);
 
     return result.rows[0].id;
   } catch (error) {
@@ -170,7 +178,7 @@ export const softDelete = async ({ id, userEmail, connection }) => {
   }
 }
 
-export const calculateTarifaTransporte = async ({ id_vehiculo_tipo, id_zona, id_cliente, fecha_salida }) => {
+export const calculateTarifaTransporte = async ({ id_vehiculo_tipo, id_zona, id_cliente, fecha_salida, id_transporte }) => {
   try {
     let query = `
       WITH TransporteTarifario AS (
@@ -186,7 +194,7 @@ export const calculateTarifaTransporte = async ({ id_vehiculo_tipo, id_zona, id_
               CASE WHEN tte.id IS NOT NULL THEN 'Transporte Especial' ELSE 'Transporte General' END AS tipo_tarifario
           FROM transporte t
           LEFT JOIN tarifario_transporte_especial tte
-              ON t.id = tte.id_transporte
+              ON tte.id_transporte = $5
               AND tte.id_vehiculo_tipo = $1
               AND tte.id_zona = $2
               AND tte.id_cliente = $3
@@ -204,7 +212,7 @@ export const calculateTarifaTransporte = async ({ id_vehiculo_tipo, id_zona, id_
       SELECT * FROM TransporteTarifario
     `;
 
-    const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida]);
+    const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida, id_transporte]);
 
     return result.rows[0];
   } catch (error) {
@@ -245,6 +253,7 @@ export const getEspecial = async ({ id }) => {
   try {
     let query = `
       SELECT 
+        vj.id,
         vj.id as id_viaje,
 
         tve.monto_cliente,
@@ -304,6 +313,40 @@ export const getEspecial = async ({ id }) => {
     }
 
     return result.rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const createViajeRemito = async ({
+  numero, id_viaje, observaciones, connection
+}) => {
+  try {
+    const timestamp = getTimestamp();
+    const queryRemito = `
+      INSERT INTO viaje_remito (numero, id_viaje, fecha_creacion) 
+      VALUES($1, $2, $3)
+      RETURNING id
+    `;
+
+    const queryRemitoObservacion = `
+      INSERT INTO viaje_remito_observacion (id_viaje_remito, observacion, fecha_creacion)
+      VALUES($1, $2, $3)
+    `;
+
+    const resultViajeRemito = await connection.queryWithParameters(queryRemito, [
+      numero, id_viaje, timestamp
+    ]);
+
+    const idViajeRemito = resultViajeRemito.rows[0].id;
+
+    const insertObservaciones = observaciones.map(observacion => 
+      connection.queryWithParameters(queryRemitoObservacion, [idViajeRemito, observacion, timestamp])  
+    );
+
+    await Promise.all(insertObservaciones);
+
+    return true;
   } catch (error) {
     throw error;
   }
