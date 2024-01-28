@@ -39,14 +39,14 @@ export const get = async ({ id }) => {
         ON tvh.id_vehiculo=vh.id
       LEFT JOIN transporte tr
         ON tr.id=tvh.id_transporte
-      LEFT JOIN viaje_tarifario vjtr
-        ON vjtr.id_viaje=vj.id
       LEFT JOIN tarifario_cliente trcl
-        ON trcl.id=vjtr.id_tarifario_cliente
+        ON trcl.id=vj.id_tarifario_cliente
       LEFT JOIN tarifario_transporte_general trtg
-        ON trtg.id=vjtr.id_tarifario_transporte_general
+        ON trtg.id=vj.id_tarifario_transporte_general
       LEFT JOIN tarifario_transporte_especial trte
-        ON trte.id=vjtr.id_tarifario_transporte_especial
+        ON trte.id=vj.id_tarifario_transporte_especial
+      LEFT JOIN tarifario_viaje_especial trve
+        ON trve.id=vj.id_tarifario_viaje_especial
       WHERE vj.activo=true
     `;
 
