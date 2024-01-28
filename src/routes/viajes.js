@@ -37,4 +37,14 @@ api.get('/viajes-calcular-tarifa',
   viajesController.calculateTarifas
 )
 
+api.get('/viajes-especiales',
+  authMiddleware.isAuthenticated,
+  viajesController.getEspecial
+);
+
+api.get('/viajes-especiales/:id',
+  authMiddleware.isAuthenticated,
+  viajesController.getEspecial
+);
+
 export default api;

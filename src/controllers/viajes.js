@@ -138,3 +138,15 @@ export const calculateTarifas = async (req, res) => {
     res.status(error?.statusCode || 500).json({ message: 'Error al obtener viajes', error });
   }
 }
+
+export const getEspecial = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await viajesService.getEspecial({ id });
+
+    res.json({ data: result });
+  } catch (error) {
+    res.status(error?.statusCode || 500).json({ message: 'Error al obtener viaje especial', error });
+  }
+}
