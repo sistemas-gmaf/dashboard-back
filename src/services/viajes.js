@@ -169,7 +169,7 @@ export const softDelete = async ({ id, userEmail, connection }) => {
     const timestamp = getTimestamp();
     let query = `
       UPDATE 
-        cheque
+        viaje
       SET
         activo=false, 
         fecha_ultima_edicion=$1,
