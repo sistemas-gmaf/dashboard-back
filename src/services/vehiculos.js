@@ -57,6 +57,31 @@ export const get = async ({ id }) => {
   }
 }
 
+export const getById = async (id) => {
+  try {
+    const query = `
+      SELECT 
+        v.*, 
+        vt.descripcion AS vehiculo_tipo_descripcion, 
+        t.nombre AS transporte_nombre
+      FROM vehiculo v 
+      LEFT JOIN vehiculo_tipo vt 
+        ON v.id_vehiculo_tipo=vt.id
+      LEFT JOIN transporte_vehiculo tv
+        ON v.id=tv.id_vehiculo
+      LEFT JOIN transporte t
+        ON tv.id_transporte=t.id
+      WHERE v.id=$1
+    `;
+
+    const result = await dbConnection.query(query, [id]);
+
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+} 
+
 export const create = async ({ 
   chofer, 
   patente, 

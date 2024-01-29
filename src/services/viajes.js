@@ -16,9 +16,12 @@ export const get = async ({ id, estado }) => {
         ch.nombre AS chofer,
         vht.id AS vehiculo_tipo_id,
         vht.descripcion AS vehiculo_tipo,     
-        vh.patente AS vehiculo_patente,   
+        vh.patente AS vehiculo_patente,  
+        vh.id as vehiculo_id,
+        z.id as zona_id,
         z.descripcion AS zona,
-        vj.estado
+        vj.estado,
+        vj.cantidad_ayudantes
       FROM 
         viaje vj
       LEFT JOIN cliente cl
@@ -351,6 +354,53 @@ export const createViajeRemito = async ({
     await Promise.all(insertObservaciones);
 
     return true;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getTarifasByViajeId = async (id) => {
+  try {
+    const query = `
+      SELECT 
+        COALESCE(tve.monto_cliente, tc.monto) AS cliente_monto,
+        COALESCE(tve.monto_cliente_por_ayudante, tc.monto_por_ayudante) AS cliente_monto_por_ayudante,
+        COALESCE(tve.monto_transporte, tte.monto, ttg.monto) AS transporte_monto,
+        COALESCE(tve.monto_transporte_por_ayudante, tte.monto_por_ayudante, ttg.monto_por_ayudante) AS transporte_monto_por_ayudante
+      FROM viaje vj
+        LEFT JOIN tarifario_cliente tc
+          ON vj.id_tarifario_cliente=tc.id
+        LEFT JOIN tarifario_transporte_general ttg
+          ON vj.id_tarifario_transporte_general=ttg.id
+        LEFT JOIN tarifario_transporte_especial tte
+          ON vj.id_tarifario_transporte_especial=tte.id
+        LEFT JOIN tarifario_viaje_especial tve
+          ON vj.id_tarifario_viaje_especial=tve.id
+      WHERE vj.id=$1
+    `;
+
+    const result = await dbConnection.query(query, [id]);
+
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getRemitoByViajeId = async (id) => {
+  try {
+    const queryRemito = `SELECT * FROM viaje_remito WHERE id_viaje=$1`;
+    const queryObservaciones = `SELECT * FROM viaje_remito_observacion WHERE id_viaje_remito=$1`;
+
+    const resultRemito = await dbConnection.query(queryRemito, [id]);
+    const idRemito = resultRemito.rows[0].id;
+
+    const resultObservaciones = await dbConnection.query(queryObservaciones, [idRemito]);
+    
+    return {
+      ...resultRemito.rows[0],
+      observaciones: resultObservaciones.rows
+    };
   } catch (error) {
     throw error;
   }

@@ -13,7 +13,7 @@ api.get('/viajes',
 
 api.get('/viajes/:id',
   authMiddleware.isAuthenticated,
-  viajesController.get
+  viajesController.getDetail
   );
   
 api.post('/viajes',

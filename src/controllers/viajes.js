@@ -1,4 +1,6 @@
 import * as viajesService from "../services/viajes.js";
+import * as clienteService from "../services/clientes.js";
+import * as vehiculosService from "../services/vehiculos.js";
 import { createTransaction } from "../configs/dbConnection.js";
 
 /**
@@ -13,6 +15,45 @@ export const get = async (req, res) => {
     const result = await viajesService.get({ id });
 
     res.json({ data: result });
+  } catch (error) {
+    res.status(error?.statusCode || 500).json({ message: 'Error al obtener viajes', error });
+  }
+}
+
+export const getDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const viaje = await viajesService.get({ id });
+    const cliente = await clienteService.get({ id: viaje.cliente_id });
+    const vehiculo = await vehiculosService.getById(viaje.vehiculo_id);
+    const tarifas = await viajesService.getTarifasByViajeId(viaje.id);
+    const remito = await viajesService.getRemitoByViajeId(viaje.id);
+
+    /**
+     * @TODO: Mejorar estructura de envio y recibimiento de datos
+     */
+    const detail = {
+      bitacoras: remito.observaciones,
+      tarifasViaje: tarifas,
+      nroRemito: remito.numero,
+      viaje: {
+        fecha_salida: viaje.fecha_salida,
+        cantidad_ayudantes: viaje.cantidad_ayudantes,
+        clienteData: { razon_social: cliente.razon_social },
+        vehiculoData: { 
+          transporte_nombre: vehiculo.transporte_nombre,
+          vehiculo_tipo_descripcion: vehiculo.vehiculo_tipo_descripcion,
+          vehiculo_patente: vehiculo.patente 
+        },
+        zonaData: {
+          id: viaje.zona_id,
+          descripcion: viaje.zona
+        },
+      }
+    };
+
+    res.json({ data: detail });
   } catch (error) {
     res.status(error?.statusCode || 500).json({ message: 'Error al obtener viajes', error });
   }
