@@ -56,9 +56,10 @@ export const update = async ({
         fecha_ultima_edicion=$5,
         correo_ultima_edicion=$6
       WHERE id=$7
+      RETURNING id
     `;
 
-    await connection.queryWithParameters(query, [
+    const result = await connection.queryWithParameters(query, [
       monto_cliente, 
       monto_cliente_por_ayudante,
       monto_transporte,
@@ -68,7 +69,7 @@ export const update = async ({
       id
     ]);
 
-    return true;
+    return result;
   } catch (error) {
     throw error;
   }

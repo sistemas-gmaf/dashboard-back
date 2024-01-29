@@ -26,6 +26,7 @@ api.post('/viajes',
 api.patch('/viajes/:id',
   authMiddleware.isAuthenticated,
   multerMiddleware.upload.none(),
+  viajesMiddleware.validateTarifario,
   viajesController.update
 );
 

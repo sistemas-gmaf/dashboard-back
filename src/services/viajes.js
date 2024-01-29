@@ -21,7 +21,11 @@ export const get = async ({ id, estado }) => {
         z.id as zona_id,
         z.descripcion AS zona,
         vj.estado,
-        vj.cantidad_ayudantes
+        vj.cantidad_ayudantes,
+        vj.id_tarifario_cliente,
+        vj.id_tarifario_transporte_general,
+        vj.id_tarifario_transporte_especial,
+        vj.id_tarifario_viaje_especial
       FROM 
         viaje vj
       LEFT JOIN cliente cl
@@ -59,7 +63,6 @@ export const get = async ({ id, estado }) => {
       result.rows = result.rows[0];
     } else if (Boolean(estado)) {
       query += ' and vj.estado=$1';
-      console.log(query)
       result = await dbConnection.query(query, [estado]);
     } else {
       result = await dbConnection.query(query);
@@ -100,62 +103,60 @@ export const create = async ({
   }
 }
 
-export const update = async ({ id, userEmail, fecha_emision, fecha_pago, numero, banco, importe, referencia, proveedor, estado, connection }) => {
+export const update = async ({ 
+  id,
+  id_cliente,
+  id_vehiculo,
+  id_zona_destino,
+  fecha_salida,
+  cantidad_ayudantes,
+  estado,
+  id_tarifario_cliente,
+  id_tarifario_transporte_general,
+  id_tarifario_transporte_especial,
+  id_tarifario_viaje_especial,
+  userEmail,
+  connection 
+}) => {
   try {
     const timestamp = getTimestamp();
     let query = `
       UPDATE 
-        cheque
+        viaje
       SET
-        fecha_ultima_edicion=$1,
-        correo_ultima_edicion=$2
+        id_cliente=$1,
+        id_vehiculo=$2,
+        id_zona_destino=$3,
+        fecha_salida=$4,
+        cantidad_ayudantes=$5,
+        estado=$6,
+        id_tarifario_cliente=$7,
+        id_tarifario_transporte_general=$8,
+        id_tarifario_transporte_especial=$9,
+        id_tarifario_viaje_especial=$10,
+        correo_ultima_edicion=$11,
+        fecha_ultima_edicion=$12
+      WHERE
+        id=$13
     `;
 
-    const queryParams = [timestamp, userEmail];
+    const queryParams = [
+      id_cliente,
+      id_vehiculo,
+      id_zona_destino,
+      fecha_salida,
+      cantidad_ayudantes,
+      estado,
+      id_tarifario_cliente,
+      id_tarifario_transporte_general,
+      id_tarifario_transporte_especial,
+      id_tarifario_viaje_especial,
+      userEmail,
+      timestamp,
+      id
+    ];
 
-    if (fecha_emision !== undefined) {
-      queryParams.push(fecha_emision);
-      query += ', fecha_emision=$' + (queryParams.length);
-    }
-
-    if (fecha_pago !== undefined) {
-      queryParams.push(fecha_pago);
-      query += ', fecha_pago=$' + (queryParams.length);
-    }
-
-    if (numero !== undefined) {
-      queryParams.push(numero);
-      query += ', numero=$' + (queryParams.length);
-    }
-
-    if (banco !== undefined) {
-      queryParams.push(banco);
-      query += ', banco=$' + (queryParams.length);
-    }
-
-    if (importe !== undefined) {
-      queryParams.push(importe);
-      query += ', importe=$' + (queryParams.length);
-    }
-
-    if (referencia !== undefined) {
-      queryParams.push(referencia);
-      query += ', referencia=$' + (queryParams.length);
-    }
-
-    if (proveedor !== undefined) {
-      queryParams.push(proveedor);
-      query += ', proveedor=$' + (queryParams.length);
-    }
-
-    if (estado !== undefined) {
-      queryParams.push(estado);
-      query += ', estado=$' + (queryParams.length);
-    }
-
-    query += ' WHERE id=$' + (queryParams.length + 1);
-
-    await connection.queryWithParameters(query, queryParams.concat(id));
+    await connection.queryWithParameters(query, queryParams);
 
     return true;
   } catch (error) {
@@ -251,6 +252,28 @@ export const calculateTarifaCliente = async ({ id_vehiculo_tipo, id_zona, id_cli
     const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida]);
 
     return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getTarifarios= async ({ id_tarifario_cliente, id_tarifario_transporte_general, id_tarifario_transporte_especial, id_tarifario_viaje_especial }) => {
+  try {
+    const queryCliente = `SELECT * FROM tarifario_cliente WHERE id=$1`;
+    const queryTransporteGeneral = `SELECT * FROM tarifario_transporte_general WHERE id=$1`;
+    const queryTransporteEspecial = `SELECT * FROM tarifario_transporte_especial WHERE id=$1`;
+    const queryViajeEspecial = `SELECT * FROM tarifario_viaje_especial WHERE id=$1`;
+
+    const resultCliente = await dbConnection.query(queryCliente, [id_tarifario_cliente]);
+    const resultTransporteGeneral = await dbConnection.query(queryTransporteGeneral, [id_tarifario_transporte_general]);
+    const resultTransporteEspecial = await dbConnection.query(queryTransporteEspecial, [id_tarifario_transporte_especial]);
+    const resultViajeEspecial = await dbConnection.query(queryViajeEspecial, [id_tarifario_viaje_especial]);
+
+    return [
+      resultCliente.rows[0],
+      resultTransporteGeneral.rows[0] || resultTransporteEspecial.rows[0],
+      resultViajeEspecial.rows[0],
+    ];
   } catch (error) {
     throw error;
   }
@@ -359,6 +382,54 @@ export const createViajeRemito = async ({
   }
 }
 
+export const updateViajeRemito = async ({
+  numero, id_viaje, observaciones, userEmail, connection
+}) => {
+  try {
+    const timestamp = getTimestamp();
+    const queryRemito = `
+      UPDATE viaje_remito SET 
+      numero=$1, fecha_ultima_edicion=$2, correo_ultima_edicion=$3 
+      WHERE id_viaje=$4
+      RETURNING id
+    `;
+
+    const queryInsertRemitoObservacion = `
+      INSERT INTO viaje_remito_observacion (id_viaje_remito, observacion, fecha_creacion)
+      VALUES($1, $2, $3)
+    `;
+
+    const queryUpdateRemitoObservacion = `
+      UPDATE viaje_remito_observacion 
+      SET observacion=$1, fecha_ultima_edicion=$2, correo_ultima_edicion=$3, activo=$4
+      WHERE id=$5
+    `;
+
+    const resultViajeRemito = await connection.queryWithParameters(queryRemito, [
+      numero, timestamp, userEmail, id_viaje
+    ]);
+
+    const idViajeRemito = resultViajeRemito.rows[0].id;
+
+    const insertObservaciones = observaciones.map(observacion => {
+      const { observacion: texto, activo, id } = observacion;
+      if (id) {
+        return connection.queryWithParameters(queryUpdateRemitoObservacion, [
+          texto, timestamp, userEmail, activo, id
+        ])
+      } else {
+        return connection.queryWithParameters(queryInsertRemitoObservacion, [idViajeRemito, texto, timestamp])  
+      }
+    });
+
+    await Promise.all(insertObservaciones);
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const getTarifasByViajeId = async (id) => {
   try {
     const query = `
@@ -390,7 +461,7 @@ export const getTarifasByViajeId = async (id) => {
 export const getRemitoByViajeId = async (id) => {
   try {
     const queryRemito = `SELECT * FROM viaje_remito WHERE id_viaje=$1`;
-    const queryObservaciones = `SELECT * FROM viaje_remito_observacion WHERE id_viaje_remito=$1`;
+    const queryObservaciones = `SELECT * FROM viaje_remito_observacion WHERE id_viaje_remito=$1 and activo=true`;
 
     const resultRemito = await dbConnection.query(queryRemito, [id]);
     const idRemito = resultRemito.rows[0].id;

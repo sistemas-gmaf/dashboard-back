@@ -27,7 +27,8 @@ export const getDetail = async (req, res) => {
     const viaje = await viajesService.get({ id });
     const cliente = await clienteService.get({ id: viaje.cliente_id });
     const vehiculo = await vehiculosService.getById(viaje.vehiculo_id);
-    const tarifas = await viajesService.getTarifasByViajeId(viaje.id);
+    const tarifasViaje = await viajesService.getTarifasByViajeId(viaje.id);
+    const tarifas = await viajesService.getTarifarios({ ...viaje });
     const remito = await viajesService.getRemitoByViajeId(viaje.id);
 
     /**
@@ -35,13 +36,22 @@ export const getDetail = async (req, res) => {
      */
     const detail = {
       bitacoras: remito.observaciones,
-      tarifasViaje: tarifas,
+      tarifasViaje: tarifasViaje,
       nroRemito: remito.numero,
+      tarifas,
       viaje: {
         fecha_salida: viaje.fecha_salida,
         cantidad_ayudantes: viaje.cantidad_ayudantes,
-        clienteData: { razon_social: cliente.razon_social },
+        clienteData: { id: cliente.id, razon_social: cliente.razon_social },
+        id_tarifario_cliente: viaje.id_tarifario_cliente,
+        id_tarifario_transporte_general: viaje.id_tarifario_transporte_general,
+        id_tarifario_transporte_especial: viaje.id_tarifario_transporte_especial,
+        id_tarifario_viaje_especial: viaje.id_tarifario_viaje_especial,
         vehiculoData: { 
+          id: vehiculo.id,
+          id_vehiculo: vehiculo.id,
+          transporte_id: vehiculo.transporte_id,
+          vehiculo_tipo_id: vehiculo.id_vehiculo_tipo,
           transporte_nombre: vehiculo.transporte_nombre,
           vehiculo_tipo_descripcion: vehiculo.vehiculo_tipo_descripcion,
           vehiculo_patente: vehiculo.patente 
@@ -50,7 +60,7 @@ export const getDetail = async (req, res) => {
           id: viaje.zona_id,
           descripcion: viaje.zona
         },
-      }
+      },
     };
 
     res.json({ data: detail });
@@ -96,9 +106,12 @@ export const update = async (req, res) => {
   try {
     const { id } = req.params;
     const { mail: userEmail } = req.user.profile;
-    connection = await createTransaction();
+    const { connection: previousConnection } = req.body;
+    connection = previousConnection || await createTransaction();
 
-    await viajesService.update({ ...req.body, userEmail, connection, id });
+    await viajesService.update({ ...req.body.viaje, userEmail, connection, id });
+
+    await viajesService.updateViajeRemito({ ...req.body.remito, id_viaje: id, connection });
 
     await connection.commit();
     res.status(200).json({ message: 'viaje actualizado correctamente' });

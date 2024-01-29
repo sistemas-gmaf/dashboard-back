@@ -1,10 +1,10 @@
 import { createTransaction } from "../configs/dbConnection.js";
-import { getTimestamp } from "../utils/time.js";
 import * as viajesService from "../services/viajes.js";
 import * as tarifarioViajesEspecialesService from "../services/tarifarioViajesEspeciales.js";
 
 export const validateTarifario = async (req, res, next) => {
   const { connection: previousConnection } = req.body;
+  const { mail: userEmail } = req.user.profile;
   let { viaje, tarifas } = req.body;
   let connection;
 
@@ -30,21 +30,40 @@ export const validateTarifario = async (req, res, next) => {
     // Si la tarifa cambia por el usuario se debe crear en el tarifario_viaje_especial
     let idTarifarioViajeEspecial = null;
     if (tarifasIsChanged) {
-      idTarifarioViajeEspecial = await tarifarioViajesEspecialesService.create({ 
-        monto_cliente: tarifas.cliente, 
-        monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
-        monto_transporte: tarifas.transporte,
-        monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
-        connection
-      });
+      if (req.params.id) { //si es un update
+        viaje.id_tarifario_viaje_especial && await tarifarioViajesEspecialesService.update({ 
+          id: viaje.id_tarifario_viaje_especial,
+          monto_cliente: tarifas.cliente, 
+          monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
+          monto_transporte: tarifas.transporte,
+          monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
+          userEmail,
+          connection
+        });
+      } else { //si es un insert
+        idTarifarioViajeEspecial = await tarifarioViajesEspecialesService.create({ 
+          monto_cliente: tarifas.cliente, 
+          monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
+          monto_transporte: tarifas.transporte,
+          monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
+          connection
+        });
+      }
     }
 
     /**
      * @TODO: aprobar directamente en caso de tener permisos
      */
-    const viajeEstado = idTarifarioViajeEspecial 
+    let viajeEstado;
+    viajeEstado = idTarifarioViajeEspecial 
       ? 'PENDIENTE'
       : 'APROBADO';
+    
+    if (req.params.id) {
+      viajeEstado = tarifasIsChanged
+        ? 'PENDIENTE'
+        : 'APROBADO';
+    }
 
     req.body.viaje = {
       id_cliente: viaje.id_cliente,
@@ -60,7 +79,7 @@ export const validateTarifario = async (req, res, next) => {
       id_tarifario_transporte_especial: tarifaTransporte.tipo_tarifario == 'Transporte Especial'
         ? tarifaTransporte.tarifario_id
         : null,
-      id_tarifario_viaje_especial: idTarifarioViajeEspecial,
+      id_tarifario_viaje_especial: viaje.id_tarifario_viaje_especial || idTarifarioViajeEspecial,
     };
 
     req.body.remito = JSON.parse(req.body.remito);

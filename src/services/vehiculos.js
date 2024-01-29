@@ -63,7 +63,9 @@ export const getById = async (id) => {
       SELECT 
         v.*, 
         vt.descripcion AS vehiculo_tipo_descripcion, 
-        t.nombre AS transporte_nombre
+        t.nombre AS transporte_nombre,
+        t.id AS transporte_id,
+        vt.id AS id_vehiculo_tipo
       FROM vehiculo v 
       LEFT JOIN vehiculo_tipo vt 
         ON v.id_vehiculo_tipo=vt.id
