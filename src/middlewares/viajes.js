@@ -1,6 +1,7 @@
 import { createTransaction } from "../configs/dbConnection.js";
 import * as viajesService from "../services/viajes.js";
 import * as tarifarioViajesEspecialesService from "../services/tarifarioViajesEspeciales.js";
+import { VIAJE_ESTADO } from "../utils/constants.js";
 
 export const validateTarifario = async (req, res, next) => {
   const { connection: previousConnection } = req.body;
@@ -56,13 +57,13 @@ export const validateTarifario = async (req, res, next) => {
      */
     let viajeEstado;
     viajeEstado = idTarifarioViajeEspecial 
-      ? 'PENDIENTE'
-      : 'APROBADO';
+      ? VIAJE_ESTADO.PENDIENTE
+      : VIAJE_ESTADO.APROBADO;
     
     if (req.params.id) {
       viajeEstado = tarifasIsChanged
-        ? 'PENDIENTE'
-        : 'APROBADO';
+        ? VIAJE_ESTADO.PENDIENTE
+        : VIAJE_ESTADO.APROBADO;
     }
 
     req.body.viaje = {

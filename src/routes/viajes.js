@@ -50,4 +50,10 @@ api.get('/viajes-especiales/:id',
   viajesController.getEspecial
 );
 
+api.patch('/viajes-especiales/:id',
+  authMiddleware.isAuthenticated,
+  multerMiddleware.upload.none(),
+  viajesController.updateEspecial
+);
+
 export default api;

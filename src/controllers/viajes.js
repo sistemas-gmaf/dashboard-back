@@ -2,6 +2,7 @@ import * as viajesService from "../services/viajes.js";
 import * as clienteService from "../services/clientes.js";
 import * as vehiculosService from "../services/vehiculos.js";
 import { createTransaction } from "../configs/dbConnection.js";
+import { VIAJE_ESTADO } from "../utils/constants.js";
 
 /**
  * @description Obtiene uno o varios viajes
@@ -201,9 +202,69 @@ export const getEspecial = async (req, res) => {
     const { id } = req.params;
 
     const result = await viajesService.get({ id, estado: 'PENDIENTE' });
-
-    res.json({ data: result });
+    
+    if (id) {
+      const tarifas = await viajesService.getTarifasByViajeId(id);
+      res.json({ 
+        data: { 
+          ...result, 
+          monto_cliente: tarifas.cliente_monto,
+          monto_cliente_por_ayudante: tarifas.cliente_monto_por_ayudante,
+          monto_transporte: tarifas.transporte_monto,
+          monto_transporte_por_ayudante: tarifas.transporte_monto_por_ayudante
+        } 
+      });
+    } else {
+      res.json({ data: result });
+    }
   } catch (error) {
     res.status(error?.statusCode || 500).json({ message: 'Error al obtener viaje especial', error });
+  }
+}
+
+export const updateEspecial = async (req, res) => {
+  const { mail: userEmail } = req.user.profile;
+  let connection;
+
+  try {
+    connection = await createTransaction();
+
+    const { 
+      id,
+      action,
+      id_tarifario_viaje_especial,
+      monto_cliente,
+      monto_cliente_por_ayudante,
+      monto_transporte,
+      monto_transporte_por_ayudante,
+      cantidad_ayudantes,
+    } = req.body;
+
+    let viajeEstado;
+
+    if (action === 'borrador') {
+      viajeEstado = VIAJE_ESTADO.PENDIENTE;
+    } else {
+      viajeEstado = VIAJE_ESTADO.APROBADO;
+    }
+
+    await viajesService.updateEspecial({
+      id_viaje: id,
+      id_tarifario_viaje_especial,
+      monto_cliente,
+      monto_cliente_por_ayudante,
+      monto_transporte,
+      monto_transporte_por_ayudante,
+      cantidad_ayudantes,
+      estado: viajeEstado,
+      userEmail,
+      connection
+    });
+
+    await connection.commit();
+    res.status(200).json({ message: 'Actualizado con exito' })
+  } catch (error) {
+    await connection?.rollback();
+    res.status(500).json({ message: 'Error al actualizar', error: error.message });
   }
 }

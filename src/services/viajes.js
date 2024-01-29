@@ -476,3 +476,48 @@ export const getRemitoByViajeId = async (id) => {
     throw error;
   }
 }
+
+export const updateEspecial = async ({
+  id_viaje,
+  id_tarifario_viaje_especial,
+  monto_cliente,
+  monto_cliente_por_ayudante,
+  monto_transporte,
+  monto_transporte_por_ayudante,
+  cantidad_ayudantes,
+  estado,
+  userEmail,
+  connection
+}) => {
+  try {
+    const timestamp = getTimestamp();
+
+    const queryUpdateViaje = `
+      UPDATE viaje 
+      SET estado=$1, fecha_ultima_edicion=$2, 
+      correo_ultima_edicion=$3, cantidad_ayudantes=$5
+      WHERE id=$4 
+    `;
+
+    const queryUpdateTarifarioEspecial = `
+      UPDATE tarifario_viaje_especial
+      SET monto_cliente=$1, monto_cliente_por_ayudante=$2, 
+        monto_transporte=$3, monto_transporte_por_ayudante=$4,
+        fecha_ultima_edicion=$5, correo_ultima_edicion=$6
+      WHERE id=$7  
+    `;
+
+    await connection.queryWithParameters(queryUpdateViaje, [
+      estado, timestamp, userEmail, id_viaje, cantidad_ayudantes
+    ]);
+
+    await connection.queryWithParameters(queryUpdateTarifarioEspecial, [
+      monto_cliente, monto_cliente_por_ayudante, monto_transporte, monto_transporte_por_ayudante,
+      timestamp, userEmail, id_tarifario_viaje_especial
+    ]);
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+}
