@@ -57,6 +57,10 @@ CREATE TABLE usuario_permiso (
     FOREIGN KEY (id_permiso) REFERENCES permiso (id)
 );
 
+ALTER TABLE usuario_permiso
+ADD CONSTRAINT usuario_permiso_unique_constraint
+UNIQUE (id_usuario, id_permiso);
+
 -- Crear tabla rol_permiso
 CREATE TABLE rol_permiso (
     id SERIAL PRIMARY KEY,
