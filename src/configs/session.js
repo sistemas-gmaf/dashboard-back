@@ -22,6 +22,7 @@ export const sessionConfig = () =>
     saveUninitialized: false,
     cookie: {
       maxAge: MAX_AGE_SESSION_COOKIE, // en milisegundos
+      sameSite: ENVIRONMENT !== "local" ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
       secure: (ENVIRONMENT !== 'local'),  // Cambia a true si estás usando HTTPS
       httpOnly: false,  // Puedes cambiar a true si quieres que la cookie solo sea accesible desde el servidor
     },
