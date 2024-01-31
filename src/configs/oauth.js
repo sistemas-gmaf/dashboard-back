@@ -33,6 +33,7 @@ export const oauthStrategyConfig = new OAuth2Strategy({
 }, async (accessToken, refreshToken, profile, done) => {
   // Verificar el correo electrónico en la base de datos
   const userProfile = await msGraphService.getUserProfile({ accessToken });
+  userProfile.mail = userProfile.userPrincipalName;
 
   // Consultar en la base de datos si existe el usuario y tiene permisos
   dbConnection.query(`
@@ -42,7 +43,7 @@ export const oauthStrategyConfig = new OAuth2Strategy({
     WHERE p.activo=TRUE AND u.correo=$1
     AND u.activo = true AND COALESCE(up.activo, FALSE) = true
     ORDER BY p.id ASC
-  `, [userProfile.mail || userProfile.userPrincipalName], (err, result) => {
+  `, [userProfile.mail], (err, result) => {
     if (err) {
       return done(err);
     }

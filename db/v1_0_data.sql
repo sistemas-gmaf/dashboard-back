@@ -248,7 +248,7 @@ BEGIN;
 
 		(60, 1, CURRENT_DATE);
 
-	INSERT INTO usuario_permiso (id_permiso, fecha_creacion) VALUES 
+	INSERT INTO usuario_permiso (id_usuario, id_permiso, fecha_creacion) VALUES 
     (1, 20, CURRENT_DATE),
     (1, 1, CURRENT_DATE),
     (1, 2, CURRENT_DATE),
