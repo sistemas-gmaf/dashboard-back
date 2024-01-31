@@ -20,8 +20,6 @@ passport.use(oauthStrategyConfig);
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-app.set("trust proxy", 1);
-
 // Configuración de la sesión con connect-pg-simple
 app.use(sessionConfig());
 
