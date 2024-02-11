@@ -25,3 +25,5 @@ export const MICROSOFT_APP_NAME = process.env.MICROSOFT_APP_NAME;
 export const MICROSOFT_APP_ID = process.env.MICROSOFT_APP_ID;
 
 export const FRONTEND_URL = process.env.FRONTEND_URL;
+
+export const IS_AUTH_BY = process.env.IS_AUTH_BY;

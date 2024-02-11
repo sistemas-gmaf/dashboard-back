@@ -1,5 +1,6 @@
 import passport from "passport";
-import { FRONTEND_URL } from "../configs/app.js";
+import { FRONTEND_URL, IS_AUTH_BY } from "../configs/app.js";
+import { encrypt } from "../utils/crypto.js";
 
 export const login = passport.authenticate('oauth2');
 
@@ -12,7 +13,13 @@ export const logout = (req, res) => {
 };
 
 export const onLogin = (req, res) => {
-  res.redirect(`${FRONTEND_URL}/dashboard/inicio`);
+  if (IS_AUTH_BY === 'cookies') {
+    res.redirect(`${FRONTEND_URL}/dashboard/inicio`);
+  }
+  if (IS_AUTH_BY === 'authorization') {
+    const authorization = encrypt(req.sessionID);
+    res.redirect(`${FRONTEND_URL}/dashboard/inicio?authorization=${encodeURIComponent(authorization)}&expires=${encodeURIComponent(req.session.cookie.expires.toISOString())}`);
+  }
 };
 
 export const onError = (req, res) => {

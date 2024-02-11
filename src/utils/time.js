@@ -8,3 +8,7 @@ export const getTimestamp = () => {
 export const getDate = () => {
   return moment.tz('America/Argentina/Buenos_Aires').format('YYYYMMDD');
 }
+
+export const getMomentDate = () => {
+  return moment.tz('America/Argentina/Buenos_Aires');
+}
