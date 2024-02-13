@@ -256,6 +256,7 @@ export const calculateTarifaCliente = async ({ id_vehiculo_tipo, id_zona, id_cli
           AND tc.id_cliente = $3
           AND TO_CHAR(tc.fecha_desde, 'YYYYMMDD') <= $4
           AND COALESCE(TO_CHAR(tc.fecha_hasta, 'YYYYMMDD'), $4) >= $4;    
+          AND tc.activo=true
     `;
 
     const result = await dbConnection.query(query, [id_vehiculo_tipo, id_zona, id_cliente, fecha_salida]);
