@@ -1,5 +1,6 @@
 import * as clientesService from "../services/clientes.js";
 import { createTransaction } from "../configs/dbConnection.js";
+import { parseDatabaseError } from "../utils/parseDatabaseError.js";
 
 /**
  * @description Obtiene uno o varios clientes
@@ -36,7 +37,7 @@ export const create = async (req, res) => {
     res.status(201).json({ message: 'Cliente creado exitosamente', idCliente });
   } catch (error) {
     await connection?.rollback();
-    res.status(error?.statusCode || 500).json({ message: 'Error al crear cliente', error: error.message });
+    res.status(parseDatabaseError(error.code) || 500).json({ message: 'Error al crear cliente', error: error.message });
   }
 }
 

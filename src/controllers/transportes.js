@@ -3,6 +3,7 @@ import { createTransaction } from "../configs/dbConnection.js";
 import * as transportesService from "../services/transportes.js";
 import * as msGraphService from "../services/msGraph.js";
 import * as documentacionService from "../services/documentacion.js";
+import { parseDatabaseError } from "../utils/parseDatabaseError.js";
 
 /**
  * @description Obtener una o varias empresas de transportes
@@ -87,7 +88,7 @@ export const create = async (req, res) => {
       msGraphService.deleteFile({ accessToken, driveId, itemId: responseSaveFile.id });
     }
     await connection?.rollback();
-    res.status(error?.statusCode || 500).json({ message: 'Error en la creacion de un transporte', error });
+    res.status(parseDatabaseError(error.code) || 500).json({ message: 'Error en la creacion de un transporte', error });
   }
 }
 

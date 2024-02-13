@@ -75,6 +75,21 @@ export const update = async ({
   }
 }
 
+export const upsert = async (params) => {
+  try {
+    let result;
+    if (params.id) {
+      result = await update(params);
+    } else {
+      result = await create(params);
+    }
+
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const softDelete = async ({ 
   id,
   userEmail,
@@ -96,6 +111,24 @@ export const softDelete = async ({
       userEmail,
       id
     ]);
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const hardDelete = async ({ 
+  id,
+  connection
+}) => {
+  try {
+    const query = `
+      DELETE FROM tarifario_viaje_especial
+      WHERE id=$1
+    `;
+
+    await connection.queryWithParameters(query, [id]);
 
     return true;
   } catch (error) {

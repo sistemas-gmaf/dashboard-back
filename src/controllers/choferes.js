@@ -11,6 +11,7 @@ import {
   FOLDER_CHOFERES_SEGURO_VEHICULO, 
   FOLDER_CHOFERES_SEGURO_VIDA 
 } from "../configs/folderNames.js";
+import { parseDatabaseError } from "../utils/parseDatabaseError.js";
 
 const mapFileNameToFolderName = {
   dni_frente: FOLDER_CHOFERES_DNI_FRENTE,
@@ -89,7 +90,7 @@ export const create = async (req, res) => {
       await Promise.all(deleteFiles.map(func => func()));
     }
     await connection?.rollback();
-    res.status(error?.statusCode || 500).json({ message: 'Error al crear chofer', error });
+    res.status(parseDatabaseError(error.code) || 500).json({ message: 'Error al crear chofer', error });
   }
 }
 

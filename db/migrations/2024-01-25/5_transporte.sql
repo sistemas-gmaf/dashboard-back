@@ -1,7 +1,6 @@
 INSERT INTO transporte (nombre, descripcion, fecha_creacion) VALUES
 ('DANIEL OSCAR DENIA', '', current_date),
 ('LUIS SANCHEZ', '', current_date),
-('SEBASTIAN BORDALLO', '', current_date),
 ('ACOSTA CARLOS DAVID', '', current_date),
 ('ADRIAN MENDIETA', '', current_date),
 ('ALBERTO LAZOS', '', current_date),

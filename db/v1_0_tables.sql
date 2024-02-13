@@ -1,3 +1,6 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
 BEGIN;
 
 --tabla para la sesion con la extension express-session
@@ -140,7 +143,7 @@ CREATE TABLE compromiso (
 -- Crear tabla transporte
 CREATE TABLE transporte (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
     descripcion VARCHAR(100) NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
@@ -161,7 +164,7 @@ CREATE TABLE vehiculo_tipo (
 -- Crear tabla vehiculo
 CREATE TABLE vehiculo (
     id SERIAL PRIMARY KEY,
-    patente VARCHAR(15) NOT NULL,
+    patente VARCHAR(15) NOT NULL UNIQUE,
     id_vehiculo_tipo INTEGER NOT NULL,
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
@@ -180,7 +183,8 @@ CREATE TABLE chofer (
     fecha_creacion TIMESTAMP NOT NULL,
     fecha_ultima_edicion TIMESTAMP NULL,
     correo_ultima_edicion VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT true NOT NULL
+    activo BOOLEAN DEFAULT true NOT NULL,
+    CONSTRAINT uk_chofer UNIQUE (nombre, dni)
 );
 
 -- Crear tabla chofer_vehiculo
@@ -209,7 +213,7 @@ CREATE TABLE zona (
 -- Crear tabla cliente
 CREATE TABLE cliente (
     id SERIAL PRIMARY KEY,
-    cuit VARCHAR(20) NOT NULL,
+    cuit VARCHAR(20) NOT NULL UNIQUE,
     razon_social VARCHAR(100) NOT NULL,
     abreviacion_razon_social VARCHAR(15),
     telefono VARCHAR(50),
@@ -315,8 +319,7 @@ CREATE TABLE viaje (
     
     FOREIGN KEY (id_tarifario_cliente) REFERENCES tarifario_cliente (id),
     FOREIGN KEY (id_tarifario_transporte_general) REFERENCES tarifario_transporte_general (id),
-    FOREIGN KEY (id_tarifario_transporte_especial) REFERENCES tarifario_transporte_especial (id),
-    FOREIGN KEY (id_tarifario_viaje_especial) REFERENCES tarifario_viaje_especial (id)
+    FOREIGN KEY (id_tarifario_transporte_especial) REFERENCES tarifario_transporte_especial (id)
 );
 
 -- Crear tabla viaje_remito
