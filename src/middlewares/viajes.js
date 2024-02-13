@@ -31,24 +31,29 @@ export const validateTarifario = async (req, res, next) => {
     // Si la tarifa cambia por el usuario se debe crear en el tarifario_viaje_especial
     let idTarifarioViajeEspecial = null;
     if (tarifasIsChanged) {
-      if (req.params.id) { //si es un update
-        viaje.id_tarifario_viaje_especial && await tarifarioViajesEspecialesService.update({ 
-          id: viaje.id_tarifario_viaje_especial,
-          monto_cliente: tarifas.cliente, 
-          monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
-          monto_transporte: tarifas.transporte,
-          monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
+      idTarifarioViajeEspecial = await tarifarioViajesEspecialesService.upsert({ 
+        id: viaje.id_tarifario_viaje_especial,
+        monto_cliente: tarifas.cliente, 
+        monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
+        monto_transporte: tarifas.transporte,
+        monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
+        userEmail,
+        connection
+      });
+    } else {
+      //en caso de que exista una tarifa cambiada y vuelva a su valor por default se borra la cambiada
+      if (viaje.id_tarifario_viaje_especial) {
+        await viajesService.update({
+          id: viaje.id,
+          id_tarifario_viaje_especial: null,
           userEmail,
           connection
         });
-      } else { //si es un insert
-        idTarifarioViajeEspecial = await tarifarioViajesEspecialesService.create({ 
-          monto_cliente: tarifas.cliente, 
-          monto_cliente_por_ayudante: tarifas.cliente_por_ayudante,
-          monto_transporte: tarifas.transporte,
-          monto_transporte_por_ayudante: tarifas.transporte_por_ayudante,
+        await tarifarioViajesEspecialesService.hardDelete({
+          id: viaje.id_tarifario_viaje_especial,
           connection
         });
+        viaje.id_tarifario_viaje_especial = null;
       }
     }
 

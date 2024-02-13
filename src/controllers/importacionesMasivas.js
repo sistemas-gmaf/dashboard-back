@@ -53,7 +53,7 @@ export const importarTarifarios = async (req, res) => {
         zona: mapZonas[tarifario.ZONA],
         cliente: mapClientes[tarifario.CLIENTE],
         monto: tarifario.VCLIENTE || 0,
-        monto_por_ayudante: tarifario.VCLIENTEAYUDANTE || 0,
+        monto_por_ayudante: tarifario['VCLIENTE AYUDANTE'] || 0,
         fecha_desde: date,
         connection,
         userEmail
@@ -66,7 +66,7 @@ export const importarTarifarios = async (req, res) => {
         zona: mapZonas[tarifario.ZONA],
         cliente: mapClientes[tarifario.CLIENTE],
         monto: tarifario.VPROVEEDOR || 0, 
-        monto_por_ayudante: tarifario.VPROVEEDORAYUDANTE || 0,
+        monto_por_ayudante: tarifario['VPROVEEDOR AYUDANTE'] || 0,
         fecha_desde: date,
         connection,
         userEmail

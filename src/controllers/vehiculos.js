@@ -3,6 +3,7 @@ import * as vehiculosService from "../services/vehiculos.js";
 import * as documentacionService from '../services/documentacion.js';
 import { FOLDER_VEHICULOS_VTV } from '../configs/folderNames.js';
 import { createTransaction } from "../configs/dbConnection.js";
+import { parseDatabaseError } from "../utils/parseDatabaseError.js";
 
 /**
  * @description Obtiene uno o varios vehiculos
@@ -93,7 +94,7 @@ export const create = async (req, res) => {
       await msGraphService.deleteFile({ accessToken, driveId, itemId: responseSaveFile.id });
     }
     await connection?.rollback();
-    res.status(error?.statusCode || 500).json({ message: 'Error al crear vehiculo', error });
+    res.status(parseDatabaseError(error.code) || 500).json({ message: 'Error al crear vehiculo', error });
   }
 }
 

@@ -103,7 +103,7 @@ export const create = async ({
   }
 }
 
-export const update = async ({ 
+export const update = async ({
   id,
   id_cliente,
   id_vehiculo,
@@ -116,31 +116,13 @@ export const update = async ({
   id_tarifario_transporte_especial,
   id_tarifario_viaje_especial,
   userEmail,
-  connection 
+  connection,
 }) => {
   try {
     const timestamp = getTimestamp();
-    let query = `
-      UPDATE 
-        viaje
-      SET
-        id_cliente=$1,
-        id_vehiculo=$2,
-        id_zona_destino=$3,
-        fecha_salida=$4,
-        cantidad_ayudantes=$5,
-        estado=$6,
-        id_tarifario_cliente=$7,
-        id_tarifario_transporte_general=$8,
-        id_tarifario_transporte_especial=$9,
-        id_tarifario_viaje_especial=$10,
-        correo_ultima_edicion=$11,
-        fecha_ultima_edicion=$12
-      WHERE
-        id=$13
-    `;
 
-    const queryParams = [
+    // Filtrar parámetros que no tienen valor definido
+    const params = {
       id_cliente,
       id_vehiculo,
       id_zona_destino,
@@ -151,11 +133,38 @@ export const update = async ({
       id_tarifario_transporte_general,
       id_tarifario_transporte_especial,
       id_tarifario_viaje_especial,
-      userEmail,
-      timestamp,
-      id
-    ];
+    };
 
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([key, value]) => value !== undefined)
+    );
+
+    // Añadir userEmail y timestamp a la consulta y los parámetros si están definidos
+    if (userEmail !== undefined) {
+      filteredParams.correo_ultima_edicion = userEmail;
+    }
+
+    if (timestamp !== undefined) {
+      filteredParams.fecha_ultima_edicion = timestamp;
+    }
+
+    // Construir la consulta SQL
+    let query = `
+      UPDATE 
+        viaje
+      SET
+        ${Object.keys(filteredParams)
+          .map((key, index) => `${key}=$${index + 1}`)
+          .join(',')}
+      WHERE
+        id=$${Object.keys(filteredParams).length + 1}
+    `;
+
+    // Construir el array de parámetros
+    const queryParams = Object.values(filteredParams);
+    queryParams.push(id);
+
+    // Ejecutar la consulta
     await connection.queryWithParameters(query, queryParams);
 
     return true;
