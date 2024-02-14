@@ -53,19 +53,19 @@ export const get = async ({ id, estado }) => {
       LEFT JOIN tarifario_viaje_especial trve
         ON trve.id=vj.id_tarifario_viaje_especial
       WHERE vj.activo=true
-      ORDER BY vj.id DESC
     `;
 
     let result;
 
     if (Boolean(id)) {
-      query += ' and vj.id=$1';
+      query += ' and vj.id=$1 ORDER BY vj.id DESC';
       result = await dbConnection.query(query, [id]);
       result.rows = result.rows[0];
     } else if (Boolean(estado)) {
-      query += ' and vj.estado=$1';
+      query += ' and vj.estado=$1 ORDER BY vj.id DESC';
       result = await dbConnection.query(query, [estado]);
     } else {
+      query += ' ORDER BY vj.id DESC';
       result = await dbConnection.query(query);
     }
 
