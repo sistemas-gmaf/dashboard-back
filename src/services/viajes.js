@@ -53,6 +53,7 @@ export const get = async ({ id, estado }) => {
       LEFT JOIN tarifario_viaje_especial trve
         ON trve.id=vj.id_tarifario_viaje_especial
       WHERE vj.activo=true
+      ORDER BY vj.id DESC
     `;
 
     let result;
