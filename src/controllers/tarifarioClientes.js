@@ -28,8 +28,9 @@ export const create = async (req, res) => {
 }
 
 export const update = async (req, res) => {
-  const { connection } = req.body;
+  const { connection: connectionFromBody } = req.body;
   
+  let connection = connectionFromBody || await createTransaction();
   try {
     const { id } = req.params;
     const { mail: userEmail } = req.user.profile;
