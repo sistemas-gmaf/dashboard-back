@@ -6,10 +6,10 @@ export const get = async () => {
       SELECT 
           (SELECT COUNT(*) FROM viaje WHERE activo=TRUE AND estado='PENDIENTE') AS viajes_pendientes,
           (SELECT COALESCE(SUM(importe), 0) AS total_importe
-            FROM compromiso WHERE TO_DATE(fecha, 'YYYYMMDD') < CURRENT_DATE - EXTRACT(DAY FROM CURRENT_DATE)::INTEGER + 1 
+            FROM compromiso WHERE fecha <= TO_CHAR(date_trunc('month', now()) + interval '1 month - 1 day', 'YYYYMMDD')
             AND estado='PENDIENTE' AND activo=true) AS compromisos_pendientes,
           (SELECT COALESCE(SUM(importe), 0) AS total_importe
-            FROM cheque WHERE TO_DATE(fecha_pago, 'YYYYMMDD') < CURRENT_DATE - EXTRACT(DAY FROM CURRENT_DATE)::INTEGER + 1 
+            FROM cheque WHERE fecha_pago <= TO_CHAR(date_trunc('month', now()) + interval '1 month - 1 day', 'YYYYMMDD')
             AND estado='PENDIENTE' AND activo=true) AS cheques_pendientes,
           t1.*,
           t1.ventas - t1.compras AS ganancia,
