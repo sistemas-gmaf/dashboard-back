@@ -35,6 +35,8 @@ export const oauthStrategyConfig = new OAuth2Strategy({
   const userProfile = await msGraphService.getUserProfile({ accessToken });
   userProfile.mail = userProfile.userPrincipalName;
 
+  console.log('oauth:', { userProfile, accessToken });
+
   // Consultar en la base de datos si existe el usuario y tiene permisos
   dbConnection.query(`
     SELECT p.label FROM permiso p
