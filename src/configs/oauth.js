@@ -33,7 +33,7 @@ export const oauthStrategyConfig = new OAuth2Strategy({
 }, async (accessToken, refreshToken, profile, done) => {
   // Verificar el correo electrónico en la base de datos
   const userProfile = await msGraphService.getUserProfile({ accessToken });
-  userProfile.mail = userProfile.userPrincipalName;
+  userProfile.mail = userProfile.userPrincipalName.toLowerCase();
 
   console.log('oauth:', { userProfile, accessToken });
 
